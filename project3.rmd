@@ -1,0 +1,11 @@
+---
+title: "Project 3"
+author: "Rachel Fellman & Sabrina Dahl"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(caret)
+```
+
