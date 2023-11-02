@@ -13,7 +13,7 @@ This repository is where Sabrina Dahl and Rachel Fellman will be working togethe
 Need to fix this when we automate the creation of the different files. This is just a start.
 
 ``` {r}
-rmarkdown::render("C:/Users/rfell/Documents/Grad Certificate/ST 558/ST558Project3/project3.rmd", 
+rmarkdown::render(".../ST558Project3/project3.rmd", 
                   output_format = "github_document", 
                   output_file = " ",
                   output_options = list(
