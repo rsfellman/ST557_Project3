@@ -1,6 +1,8 @@
 ---
 title: "Project 3"
 author: "Rachel Fellman & Sabrina Dahl"
+params: 
+  Ed: 1
 ---
 
 ```{r setup, include=FALSE}
@@ -30,42 +32,17 @@ diabetes.1 <- diabetes %>%
 
 We will start by doing some exploratory data analysis on the full data set. 
 
-Since we will be creating models for different education levels, we will split up the data into smaller data set for each of the 5 education levels to do EDA. 
+Since we will be creating models for different education levels, we will split up the data into smaller data set for each of the 5 education levels to do EDA. We will do this using our parameters
 ```{r}
-#create education 1 data set
-diabetes.ed1 <- diabetes.1 %>% 
-  filter(Education ==1)
+#create subsetted data set for each level of education using the params.
+diabetes.ed <- diabetes.1 %>% 
+  filter(Education == params$Ed)
 ```
-
-```{r}
-#create education 3 data set
-diabetes.ed3 <- diabetes.1 %>% 
-  filter(Education ==3)
-```
-
-```{r}
-#create education 4 data set
-diabetes.ed4 <- diabetes.1 %>% 
-  filter(Education ==4)
-```
-
-```{r}
-#create education 5 data set
-diabetes.ed5 <- diabetes.1 %>% 
-  filter(Education ==5)
-```
-
-```{r}
-#create education 6 data set
-diabetes.ed6 <- diabetes.1 %>% 
-  filter(Education ==6)
-```
-
 
 We will start by looking at a scatter plot of the proportion of people with diabetes across BMI levels. First we will create the proportion variable and then we will use `ggplot` with `geom_point` to create the graph.
 ```{r}
-# group by BMI to create graph of proportion of people with diabetes at each BMI for education 1.
-bmi.sum <- diabetes.ed1 %>% 
+# group by BMI to create graph of proportion of people with diabetes at each BMI.
+bmi.sum <- diabetes.ed %>% 
   group_by(BMI) %>% 
   summarise(proportion.diabetes = mean(Diabetes_binary), n = n())
 # create plot
@@ -79,36 +56,36 @@ When looking at this graph is is helpful to look for trends. You can examine the
 
 Next we will look at a Graph of proportion of Diabetes for different ages. First we will create the proportion variable and then we will use `ggplot` with `geom_point` to create the graph.
 ```{r}
-# group by BMI to create graph of proportion of people with diabetes at each age for education 1.
-age.sum <- diabetes.ed1 %>% 
+# group by BMI to create graph of proportion of people with diabetes at each age.
+age.sum <- diabetes.ed %>% 
   group_by(Age) %>% 
   summarise(proportion.diabetes = mean(Diabetes_binary))
 # create plot
 ggplot(age.sum, aes(x = Age, y = proportion.diabetes)) +
   geom_point(stat = "identity")+ 
 #add title
-  labs(title = "Proportion of People with Diabetes at each age for Education = 1")
+  labs(title = "Proportion of People with Diabetes at each age")
 ```
 When examining this graph, it is helpful to look for trends in the data. For example, do higher ages have higher proportions of diabetes or lower proportions? You can also think about what kind of trend line would best describe the data. Is the relationship linear, parabolic, etc. ? Keep in mind that the age is split into categories with 1 being 18 - 24, and 13 being 80 and older. The age levels are done in 5 year increments. 
 
 Next we will create a graph of diabetes proportion vs income. First we will create the proportion variable and then we will use `ggplot` with `geom_point` to create the graph. The inclome levels are as follows: 1 = < $10,000, 5 = 
 ```{r}
 # group by income to create graph of proportion of people with diabetes at each income for education 1.
-income.sum <- diabetes.ed1 %>% 
+income.sum <- diabetes.ed %>% 
   group_by(Income) %>% 
   summarise(proportion.diabetes = mean(Diabetes_binary), n= n())
 # create plot
 ggplot(income.sum, aes(x = Income, y = proportion.diabetes, size = n)) +
   geom_point(stat = "identity")+ 
 #add title
-  labs(title = "Proportion of People with Diabetes at each income level for Education = 1")
+  labs(title = "Proportion of People with Diabetes at each income level")
 ```
 This graph shows us the proportion of people with diabetes at each income level. Level 1 is less than 10,000 dollars and it goes all the way up to level 8 which is greater than or equal to 75,000 dollars. It is helpful to see if the graph shows any positive or negative correlations between the income and the proportion of people with diabetes. Since this graph also includes larger points when there is more data, you can see if there are more data at lower or higher incomes.
 
 Next we will create a table to examine some of our binary variables. We will create a table for the number of people with diabetes by if they have any health care or not. This will be done via the `table` function. I will also add a row to the table for the proportion of people with diabetes to help us better understand the data.
 
 ```{r}
-tab<- table(diabetes.ed1$Diabetes_binary, diabetes.ed1$AnyHealthcare)
+tab<- table(diabetes.ed$Diabetes_binary, diabetes.ed1$AnyHealthcare)
 rbind(tab, apply(tab, MARGIN = 2, FUN = function(x){round(x[2] / sum(x), 3)}))
 ```
 In this table we have the columns giving the count of people who have health care (0 = no, 1 = yes), and the rows providing the count of people with diabetes( 0 = no, 1 = yes). The last row of the table gives the proportion of people with diabetes for each column. It is helpful to look at these proportions and see if there are greater percents of people with diabetes for those who have healthcare vs those who don't. 
