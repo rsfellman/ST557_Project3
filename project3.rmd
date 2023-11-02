@@ -114,6 +114,9 @@ diabetes.train <- diabetes.ed[train.index, ]
 diabetes.test <- diabetes.ed[-train.index, ]
 ```
 
+## Log Loss
+
+
 
 # Model Selection
 
