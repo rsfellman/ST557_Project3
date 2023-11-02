@@ -8,7 +8,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(caret)
 ```
-test test does this commit to my branch only 
+
 # Introduction
 
 # Data
@@ -29,6 +29,125 @@ diabetes.1 <- diabetes %>%
 # Summarizations
 
 We will start by doing some exploratory data analysis on the full data set. 
+
+Since we will be creating models for different education levels, we will split up the data into smaller data set for each of the 5 education levels to do EDA. 
+```{r}
+#create education 1 data set
+diabetes.ed1 <- diabetes.1 %>% 
+  filter(Education ==1)
+```
+
+```{r}
+#create education 3 data set
+diabetes.ed3 <- diabetes.1 %>% 
+  filter(Education ==3)
+```
+
+```{r}
+#create education 4 data set
+diabetes.ed4 <- diabetes.1 %>% 
+  filter(Education ==4)
+```
+
+```{r}
+#create education 5 data set
+diabetes.ed5 <- diabetes.1 %>% 
+  filter(Education ==5)
+```
+
+```{r}
+#create education 6 data set
+diabetes.ed6 <- diabetes.1 %>% 
+  filter(Education ==6)
+```
+
+
+We will start by looking at the proportion of people with diabetes across BMI levels. We will create separate graohs for each of the Education levels.  
+```{r}
+# group by BMI to create graph of proportion of people with diabetes at each BMI for education 1.
+bmi.sum <- diabetes.ed1 %>% 
+  group_by(BMI) %>% 
+  summarise(proportion.diabetes = mean(Diabetes_binary), n = n())
+# create plot
+ggplot(bmi.sum, aes(x = BMI, y = proportion.diabetes, size = n)) +
+  geom_point(stat = "identity")+ 
+#add title
+  labs(title = "Proportion of People with Diabetes at each BMI for Education = 1")
+```
+From this plot we can see that there are more people with lower BMIs indicated by the larger points. There also seems to be a positive correlation between BMI and the proportion of people that have diabetes. However at the higher BMIs the trend changes a bit. This could be because there is just less data at higher BMIs so it is harder to see the trend.
+
+```{r}
+# group by BMI to create graph of proportion of people with diabetes at each BMI for education 3.
+bmi.sum <- diabetes.ed3 %>% 
+  group_by(BMI) %>% 
+  summarise(proportion.diabetes = mean(Diabetes_binary), n = n())
+# create plot
+ggplot(bmi.sum, aes(x = BMI, y = proportion.diabetes, size = n)) +
+  geom_point(stat = "identity")+ 
+#add title
+  labs(title = "Proportion of People with Diabetes at each BMI for Education = 3")
+```
+From this plot we can see that there are more people with lower BMIs indicated by the larger points. There also seems to be a positive correlation between BMI and the proportion of people that have diabetes. However at the higher BMIs the trend changes a bit. This could be because there is just less data at higher BMIs so it is harder to see the trend.
+
+
+```{r}
+# group by BMI to create graph of proportion of people with diabetes at each BMI for education 4.
+bmi.sum <- diabetes.ed4 %>% 
+  group_by(BMI) %>% 
+  summarise(proportion.diabetes = mean(Diabetes_binary), n = n())
+# create plot
+ggplot(bmi.sum, aes(x = BMI, y = proportion.diabetes, size = n)) +
+  geom_point(stat = "identity")+ 
+#add title
+  labs(title = "Proportion of People with Diabetes at each BMI for Education = 4")
+```
+From this plot we can see that there are more people with lower BMIs indicated by the larger points. There also seems to be a positive correlation between BMI and the proportion of people that have diabetes. However at the higher BMIs the trend changes and there appear to be many people with high BMIs and no Diabetes.
+
+```{r}
+# group by BMI to create graph of proportion of people with diabetes at each BMI for education 5.
+bmi.sum <- diabetes.ed5 %>% 
+  group_by(BMI) %>% 
+  summarise(proportion.diabetes = mean(Diabetes_binary), n = n())
+# create plot
+ggplot(bmi.sum, aes(x = BMI, y = proportion.diabetes, size = n)) +
+  geom_point(stat = "identity")+ 
+#add title
+  labs(title = "Proportion of People with Diabetes at each BMI for Education = 5")
+```
+The relationship of proportion of people with diabetes vs BMI for education level 5 has almost a parabolic shape. However, we once again see fewer data points at the higher BMIs making it more difficult to know what trend the data would follow if there was more data.
+
+
+```{r}
+# group by BMI to create graph of proportion of people with diabetes at each BMI for education 6.
+bmi.sum <- diabetes.ed6 %>% 
+  group_by(BMI) %>% 
+  summarise(proportion.diabetes = mean(Diabetes_binary), n = n())
+# create plot
+ggplot(bmi.sum, aes(x = BMI, y = proportion.diabetes, size = n)) +
+  geom_point(stat = "identity")+ 
+#add title
+  labs(title = "Proportion of People with Diabetes at each BMI for Education = 6")
+```
+At education level 6 there still appears to be positive correlation between proportion of people with diabetes and BMI. The trend is less clear at higher BMI levels where there are also fewer data points. 
+
+
+Next we will look at a contingency table of Diabetes for different ages. We will include the proportion of people with diabetes at each age to make it easier to understand the data. This will be done across each education level.
+```{r}
+# create table of diabetes by age for education level 1
+tab <- table(diabetes.ed1$Diabetes_binary, diabetes.ed1$Age)
+rbind(tab, apply(tab, MARGIN = 2, FUN = function(x) {round(x[2]/sum(x),3)}))
+```
+From this table we can see that there are higher proportions of people with diabetes at the higher ages. The maximum proportion at education level 1 is .388.
+
+```{r}
+# create table of diabetes by age for education level 3
+tab <- table(diabetes.ed3$Diabetes_binary, diabetes.ed3$Age)
+rbind(tab, apply(tab, MARGIN = 2, FUN = function(x) {round(x[2]/sum(x),3)}))
+```
+At education level 3 we can see the same trend of there being a lower proportion of diabetes among younger people. The highest proportion of diabetes appears to be at age 11 with 32.4% of people having diabetes. 
+
+FINISH WITH 4,5,6
+
 
 # Modeling
 
