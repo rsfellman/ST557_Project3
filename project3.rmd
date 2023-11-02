@@ -1,6 +1,8 @@
 ---
 title: "Project 3"
 author: "Rachel Fellman & Sabrina Dahl"
+params: 
+  Ed: 1
 ---
 
 ```{r setup, include=FALSE}
@@ -30,6 +32,13 @@ diabetes.1 <- diabetes %>%
 
 We will start by doing some exploratory data analysis on the full data set. 
 
+Since we will be creating models for different education levels, we will split up the data into smaller data set for each of the 5 education levels to do EDA. We will do this using our parameters
+```{r}
+#create subsetted data set for each level of education using the params.
+diabetes.ed <- diabetes.1 %>% 
+  filter(Education == params$Ed)
+```
+
 # Modeling
 
 Before doing any modeling we will split the data into a training and test set using the `createDataPartition` function from the `caret` package. The test/train data will be split with a 70/30 ratio.
@@ -38,10 +47,10 @@ Before doing any modeling we will split the data into a training and test set us
 #make things reproducible with set.seed (I have no idea what number we are supposed to put here because I don't really know what this function does)
 set.seed(90)
 #create index
-train.index <- createDataPartition(diabetes.1$Diabetes_binary, p = .7, list = FALSE)
+train.index <- createDataPartition(diabetes.ed$Diabetes_binary, p = .7, list = FALSE)
 #create train and test sets
-diabetes.train <- diabetes.1[train.index, ]
-diabetes.test <- diabetes.1[-train.index, ]
+diabetes.train <- diabetes.ed[train.index, ]
+diabetes.test <- diabetes.ed[-train.index, ]
 ```
 
 
