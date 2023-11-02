@@ -1,10 +1,6 @@
-README
+ST558 Project 3
 ================
 Rachel Fellman & Sabrina Dahl
-
-# ST557_Project3
-
-ST558 project 3 repository
 
 # Description
 
@@ -14,23 +10,29 @@ models and create 5 output files that will be linked below.
 
 # R Packages
 
-`tidyverse` `caret`
+`tidyverse` `caret` `rmarkdown` ’pwalk\`
 
 # Code to Render Files
 
-Need to fix this when we automate the creation of the different files.
-This is just a start.
+To render the files we first have to create a data frame that has the
+file names to output to and a list with each name for using in the
+`render` function.
 
 ``` r
-rmarkdown::render("project3.rmd", 
-                  output_format = "github_document", 
-                  output_file = x[[1]], params = x[[2]]
-                  output_options = list(
-                    toc = TRUE,
-                    number_sections = TRUE,
-                    toc_depth = 2,
-                    df_print = 'tibble'
-                  )
+#get education levels
+ed.levels <- unique(diabetes.1$Education)
+#create filenames
+output_file <- paste0(ed.levels, ".md")
+#create a list which just the education level parameter
+params = lapply(ed.level, FUN = function(x){list(ed = x)})
+#put into data frame
+reports <- tibble(output_file, params)
+```
+
+Next, using the `pwalk` function, we will knit the documents.
+
+``` r
+pwalk(reports, render, input = "project3.rmd")
 ```
 
 # Links to files
