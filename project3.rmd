@@ -7,6 +7,7 @@ params:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(plyr)
 library(tidyverse)
 library(caret)
 ```
@@ -37,6 +38,8 @@ Since we will be creating models for different education levels, we will split u
 #create subsetted data set for each level of education using the params.
 diabetes.ed <- diabetes.1 %>% 
   filter(Education == params$Ed)
+# makes Diabetes_binary variable a factor
+diabetes.ed$Diabetes_binary <- as_factor(diabetes.ed$Diabetes_binary)
 ```
 
 We will start by looking at a scatter plot of the proportion of people with diabetes across BMI levels. First we will create the proportion variable and then we will use `ggplot` with `geom_point` to create the graph.
@@ -129,6 +132,82 @@ $$ P(sucessX) = \frac {e^{β_0+β_1X}}{1 + e^{β_0+β_1X}}$$
 Since logistic regression is a rather complicated model to interpret, we can back solve to get the log-odds. The log-odds or logit function models the log-odds of an event occurring as a linear combination of predictor variables. IT maps probability values to the full range of real numbers. The odds are essentialy a ratio of probability of success to the probability of failure. Log-odds are represented by the following function:
 $$ log(\frac {(P(successX)}{ 1-P(successX)}) = β_0+β_1X $$
 It is important to note that the interpretation of the coefficients in the logit function differ from that of linear regression. In this case β1 represents the change in the log-odds of success. 
+
+Now that we have an understanding of logistic regression we will fit tree candidate logistic regression models and then choose the best model using the log loss.
+
+We will use the `train` function from the `caret` package to fit out models. We will set the method to `glm` and the family to `binomial` to specify binomial logistic regression. We will also preprocess pur data by centering and scaling it. For each of the three models we will do cross validation with 5 folds. 
+
+Before fitting the logistic regression models with the Log Loss metric, we need to change the values of the factor `Diabetes_binary` so that we do not get an error from R.
+```{r}
+diabetes.train.log <- diabetes.train %>% 
+  mutate(Diabetes_binary = as_factor(ifelse(Diabetes_binary == 1, "yes", "no")))
+diabetes.test.log <- diabetes.test %>% 
+  mutate(Diabetes_binary = as_factor(ifelse(Diabetes_binary == 1, "yes", "no")))
+```
+
+
+The first model will use the variables `AnyHealthcare`, `Sex`, `Age`, and `HighChol`.
+```{r}
+#Use to training set to train the first model
+fit.log1 <- train(Diabetes_binary ~ AnyHealthcare + Sex + Age + HighChol, data = diabetes.train.log,
+                 #select generalized linear model method
+                 method = "glm",
+                 #specify family
+                 family = "binomial",
+                 #preprocess data
+                 preProcess = c("center", "scale"),
+                 # calculate log loss metric
+                 metric = "logLoss",
+                 #do cross validation
+                 trControl = trainControl(method = "cv", number = 5, summaryFunction = mnLogLoss, classProbs = TRUE)
+                 )
+```
+
+The second logistic model will use the variables `BMI`, `PhysActivity`, `MentHlth`, and `Income`.
+```{r}
+#Use to training set to train the second model
+fit.log2 <- train(Diabetes_binary ~ BMI + PhysActivity + MentHlth + Income , data = diabetes.train.log,
+                 #select generalized linear model method
+                 method = "glm",
+                 #specify family
+                 family = "binomial",
+                 #preprocess data
+                 preProcess = c("center", "scale"),
+                 # calculate log loss metric
+                 metric = "logLoss",
+                 #do cross validation
+                 trControl = trainControl(method = "cv", number = 5, summaryFunction = mnLogLoss, classProbs = TRUE)
+                 )
+```
+
+The third logistic regression model will use the variables `HighBP`, `Veggies`, `GenHlth`, and `DiffWalk`.
+```{r}
+#Use to training set to train the third model
+fit.log3 <- train(Diabetes_binary ~ HighBP + Veggies + GenHlth + DiffWalk, data = diabetes.train.log,
+                 #select generalized linear model method
+                 method = "glm",
+                 #specify family
+                 family = "binomial",
+                 #preprocess data
+                 preProcess = c("center", "scale"),
+                 # calculate log loss metric
+                 metric = "logLoss",
+                 #do cross validation
+                 trControl = trainControl(method = "cv", number = 5, summaryFunction = mnLogLoss, classProbs = TRUE)
+                 )
+```
+
+Next I will print the fit of the 3 models and choose the bets based on the log loss metric.
+```{r}
+print(fit.log1)
+```
+```{r}
+print(fit.log2)
+```
+```{r}
+print(fit.log3)
+```
+In this case our `fit.log3` has the lowest log loss and is therefore our chosen model out of the 3 logistic regression models. 
 
 # Model Selection
 
