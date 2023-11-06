@@ -7,7 +7,6 @@ params:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(plyr)
 library(tidyverse)
 library(caret)
 ```
@@ -209,5 +208,20 @@ print(fit.log3)
 ```
 In this case our `fit.log3` has the lowest log loss and is therefore our chosen model out of the 3 logistic regression models. 
 
-# Model Selection
+## Lasso
+
+## Classification Trees
+
+## Random Forest Models
+
+  A random forest model is an extension of the bagged tree classification model. In a bagged tree model, the bootstrapping method is used and the data is resampled multiple times to create different test sets and then each test set is trained on models separately. Then our final prediction is the average of the individual model's predictions. The Random Forest model uses the same bagging method and creates multiple trees from the bootstrap samples and averages the results. The difference is that the Random Forest method does not use all of the predictors, instead it uses a random subset of predictors for each sample and tree fit. More specifically, in a random forest model, each time there is a split, the predictor to split on is chosen from a random sample of m predictors from the full set of predictors. At each node, a new sample of m predictors is taken. For classification problems, m is about equal to the square root of the total number of predictors. 
+  
+  In a random forest model, the algorithm cannot choose from the majority of the existing predictors. This is useful in the case where extra strong predictors exist. A regular bagged tree model will likely use said strong predictor for the first split every time, and our resulting trees will look very similar and likely be highly correlated. The average prediction of many correlated tree models does lead to a reduction in the variance. Forcing the model to choose from a subset of predictors, causes the resulting trees to be less correlated and therefore the random forest method leads to a reduction in variance and more reliable prediction. A basic classification tree can be non-robust and small changes in the data can lead to large alterations in the result. Bagging and random forest models aggregate many decision trees to increase the predictive performance of these models. With more models, we get more accurate predictions. Basic classification trees are very susceptible to being overfit to our data since their accuracy improves with each split. The multiple trees created in a random forest model reduces the chances of overfitting our model making them superior when it comes to prediction. However, we do lose the interpretability of a singular classification tree when we use random forest models.
+
+
+
+
+Now that we have an understanding of the random foreset model 
+
+# Final Model Selection
 
