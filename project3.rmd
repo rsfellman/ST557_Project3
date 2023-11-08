@@ -272,10 +272,26 @@ Out of the 6 best models (one of each type) above we will now select the final b
 
 Using the `confusionMatrix` function, we will test our models on the test sets. 
 ```{r}
-confusionMatrix(data = test.diabetes.log, reference = predict(fit.rf, newdata = test.diabetes.log))
+a<- confusionMatrix(data = diabetes.test.log$Diabetes_binary, reference = predict(fit.rf, newdata = diabetes.test.log))
+b<- confusionMatrix(data = diabetes.test.log$Diabetes_binary, reference = predict(fit.log3, newdata = diabetes.test.log))
+c<- confusionMatrix(data = diabetes.test.log$Diabetes_binary, reference = predict(fit.ob, newdata = diabetes.test.log))
 ```
 
+Now we will add each of the model's and their accuracy to a tibble. The reason we are using the accuracy here is because we want to see how often our models correctly predicted on the test sets.
+```{r}
+name<- c("fit.rf", "fit.log3", "fit.ob")
+accuracy <- c(a[[3]][1],b[[3]][1],c[[3]][1])
+all.fits<- tibble(name, accuracy)
+```
 
+Next we will use our tibble with all the model's and their accuracy to chose the best model. The model that was most accurate at predicting in the test set will be the winner so we will use the `max` function to find the model with the highest accuracy.
+```{r}
+best<- all.fits %>% 
+  mutate(name== name, best = max(accuracy)) %>% 
+  filter(best == accuracy)
+```
 
-
-+ Fruits + Veggies+ GenHlth + Age 
+Now we will use the `paste` function to give us the result of the best model.
+```{r}
+paste("The best model is", best$name, " ")
+```
