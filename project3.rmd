@@ -9,6 +9,11 @@ params:
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(caret)
+
+pls
+mda
+ROCR
+obliquerf
 ```
 
 # Introduction
@@ -218,10 +223,59 @@ In this case our `fit.log3` has the lowest log loss and is therefore our chosen 
   
   In a random forest model, the algorithm cannot choose from the majority of the existing predictors. This is useful in the case where extra strong predictors exist. A regular bagged tree model will likely use said strong predictor for the first split every time, and our resulting trees will look very similar and likely be highly correlated. The average prediction of many correlated tree models does lead to a reduction in the variance. Forcing the model to choose from a subset of predictors, causes the resulting trees to be less correlated and therefore the random forest method leads to a reduction in variance and more reliable prediction. A basic classification tree can be non-robust and small changes in the data can lead to large alterations in the result. Bagging and random forest models aggregate many decision trees to increase the predictive performance of these models. With more models, we get more accurate predictions. Basic classification trees are very susceptible to being overfit to our data since their accuracy improves with each split. The multiple trees created in a random forest model reduces the chances of overfitting our model making them superior when it comes to prediction. However, we do lose the interpretability of a singular classification tree when we use random forest models.
 
+Now that we have an understanding of the random forest model we will fit a random forest model to our data. Onve again we will do cross validation with 5 folds.
+```{r}
+#create random forest model
+fit.rf<- train(Diabetes_binary ~ ., data = diabetes.train.log,
+                 #select rf method
+                 method = "rf",
+                 # calculate log loss metric
+                 metric = "logLoss",
+                 #do cross validation
+                 trControl = trainControl(method = "cv", number = 5, summaryFunction = mnLogLoss, classProbs = TRUE),
+                 #add tuning parameter
+                 tuneGrid = data.frame(mtry = 1:21)
+                 )
+```
+```{r}
+#print results of random forest model
+print(fit.rf)
+```
+The best model for the random forest was with `mtry = 5`. `mtry` is a tuning parameter that gives us the number of randomly selected predictors we will use. Since the random forest model uses only a subset of the predictors and not all of them, we tested the model on all numbers of predictors in the dataset (1 to 21). 
 
+Next we will look at some models that were not explained in class.
 
+## Oblique Decision trees
 
-Now that we have an understanding of the random foreset model 
+Since we are already familiar with random forests and decision trees we will take that one step further and model the data with an oblique decision tree. Oblique decision trees are a tree model that uses a linear combination of variables at each node instead of just one variable. This allows there to be an infinite number of possible splits for the model to chose from. In the case of this project we are wanting to predict the variable `Diabetes_binary` using variables such as `HighBP`, `PhysActivity`, and `Veggies`, etc. A standard decision tree (like those used above) would only check a single variable. For example, the node might split along `HighBP` with values of 1 forming one branch and 0 the other. With the oblique model, the algorithm might instead split a node along 2(`HighBP`) + 3(`PhysActivity`) + 2(`Veggies`). Since oblique decision trees split along linear combinations of variables they do lose the interpretability of a standard tree model. 
+
+We will fit the oblique decision tree using the `train` function from the `caret` package. We will continue to use cross validation with 5 folds. We will specify the `method = ORFpls` for oblique random forest. There appear to be a few different oblique methods to chose from and the pls in this case stands for partial least squares. We could not find information on which would be best to use in our case.
+```{r, message=FALSE, warning=FALSE}
+#create oblique model
+fit.ob<- train(Diabetes_binary ~ . , data = diabetes.train.log,
+                 #select rf method
+                 method = "wsrf",
+                 # calculate log loss metric
+                 metric = "logLoss",
+                 #preprocess data
+                 preProcess = c("center", "scale"),
+                 #do cross validation
+                 trControl = trainControl(method = "cv", number = 5, summaryFunction = mnLogLoss, classProbs = TRUE),
+                 #add tuning parameter
+                 tuneGrid = data.frame(mtry = 1:6)
+                 )
+```
+
 
 # Final Model Selection
+Out of the 6 best models (one of each type) above we will now select the final best model.
 
+Using the `confusionMatrix` function, we will test our models on the test sets. 
+```{r}
+confusionMatrix(data = test.diabetes.log, reference = predict(fit.rf, newdata = test.diabetes.log))
+```
+
+
+
+
++ Fruits + Veggies+ GenHlth + Age 
