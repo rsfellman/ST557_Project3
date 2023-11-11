@@ -44,7 +44,7 @@ diabetes.ed <- diabetes.1 %>%
 
 We will also look at the graph of diabetes proportion vs their Physical Health. 
 ```{r}
-#group by PhysHlth to create graph of proportion of people with diabetes at each number of days with illness/injury.
+#group by PhysHlth to create graph of proportion of people with diabetes at each number of days with illness/injury
 physHlth.sum <- diabetes.ed %>% 
   group_by(PhysHlth) %>% 
   summarise(proportion.diabetes = mean(Diabetes_binary), n = n())
@@ -57,21 +57,43 @@ ggplot(physHlth.sum, aes(x = PhysHlth, y = proportion.diabetes, size = n)) +
 ```  
 
 ```{r}
+#Create a table with the proportions of people with/without diabetes vs whether they heavily drink or not
 tab.Alc<- table(diabetes.ed$Diabetes_binary, diabetes.ed$HvyAlcoholConsump)
-rbind(tab.Alc, apply(tab.Alc, MARGIN = 2, FUN = function(x){round(x[2] / sum(x), 3)}))
+#Add Column and row names
+colnames(tab.Alc)=c("No Heavy Alcohol Consumption", "Heavy Alcohol Consumption")
+rownames(tab.Alc)=c("No Diabetes", "Pre-/Diabetes")
+tab.Alc #printing
 ```  
 
 ```{r}
-# group by PhysHlth to create graph of proportion of people with diabetes at each number of days with illness/injury.
-noDoc.sum <- diabetes.ed %>% 
-  group_by(NoDocbcCost) %>% 
-  summarise(proportion.diabetes = mean(Diabetes_binary), n = n())
-#create plot
-ggplot(noDoc.sum, aes(x = noDocbcCost, y = proportion.diabetes, size = n)) +
-  geom_point(stat = "identity")+ 
-#add title and labels
-  xlab("Avoided Doctor")+
-  labs(title = "Proportion of People with Diabetes", subtitle = "vs whether they avoided Doctor visits because of the cost")
+#create a new factor variable of the Sex variable
+Gender <- factor(ifelse(diabetes.ed$Sex>0,"Female","Male"))
+#group by HvyAlcoholConsump to create graph of proportion of people with diabetes vs whether they drink heavily or not and their sex
+Alc.sum <- diabetes.ed %>% 
+  mutate(proportion.diabetes = mean(Diabetes_binary), Gender) %>%
+  group_by(HvyAlcoholConsump)
+#create graph
+ggplot(Alc.sum, aes(x=HvyAlcoholConsump, y=proportion.diabetes))+
+  geom_bar(stat="identity", aes(fill=Gender), position="stack")
+```
+
+```{r}
+#Create a table with the proportions of people with/without diabetes vs whether they had to avoid the doctor the last 30 days due to costs
+tab.Doc<- prop.table(table(diabetes.ed$Diabetes_binary, diabetes.ed$NoDocbcCost))
+#Add Column and row names
+colnames(tab.Doc)=c("Not Avoid", "Avoid Doc")
+rownames(tab.Doc)=c("No Diabetes", "Pre-/Diabetes")
+tab.Doc #printing
+```
+
+```{r}
+#group by NoDocbcCost to create graph of proportion of people with diabetes vs whether they avoided the doctor or not and their sex
+Doc.sum <- diabetes.ed %>% 
+  mutate(proportion.diabetes = mean(Diabetes_binary), Gender) %>%
+  group_by(NoDocbcCost)
+#create graph
+ggplot(Doc.sum, aes(x=NoDocbcCost, y=proportion.diabetes))+
+  geom_bar(stat="identity", aes(fill=Gender),position="stack")
 ```
 
 # Modeling
