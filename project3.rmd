@@ -40,6 +40,38 @@ Since we will be creating models for different education levels, we will split u
 #create subsetted data set for each level of education using the params.
 diabetes.ed <- diabetes.1 %>% 
   filter(Education == params$Ed)
+```  
+
+We will also look at the graph of diabetes proportion vs their Physical Health. 
+```{r}
+#group by PhysHlth to create graph of proportion of people with diabetes at each number of days with illness/injury.
+physHlth.sum <- diabetes.ed %>% 
+  group_by(PhysHlth) %>% 
+  summarise(proportion.diabetes = mean(Diabetes_binary), n = n())
+# create plot
+ggplot(physHlth.sum, aes(x = PhysHlth, y = proportion.diabetes, size = n)) +
+  geom_point(stat = "identity")+ 
+#add title and labels
+  xlab("Physical Illness/Injury (# of days)")+
+  labs(title = "Proportion of People with Diabetes", subtitle = "vs the number of days they had a Physical illness/injury the last 30 days")
+```  
+
+```{r}
+tab.Alc<- table(diabetes.ed$Diabetes_binary, diabetes.ed$HvyAlcoholConsump)
+rbind(tab.Alc, apply(tab.Alc, MARGIN = 2, FUN = function(x){round(x[2] / sum(x), 3)}))
+```  
+
+```{r}
+# group by PhysHlth to create graph of proportion of people with diabetes at each number of days with illness/injury.
+noDoc.sum <- diabetes.ed %>% 
+  group_by(NoDocbcCost) %>% 
+  summarise(proportion.diabetes = mean(Diabetes_binary), n = n())
+#create plot
+ggplot(noDoc.sum, aes(x = noDocbcCost, y = proportion.diabetes, size = n)) +
+  geom_point(stat = "identity")+ 
+#add title and labels
+  xlab("Avoided Doctor")+
+  labs(title = "Proportion of People with Diabetes", subtitle = "vs whether they avoided Doctor visits because of the cost")
 ```
 
 # Modeling
