@@ -101,6 +101,8 @@ ggplot(Doc.sum, aes(x=NoDocbcCost, y=proportion.diabetes))+
 Before doing any modeling we will split the data into a training and test set using the `createDataPartition` function from the `caret` package. The test/train data will be split with a 70/30 ratio.
 
 ```{r}
+# makes Diabetes_binary variable a factor
+diabetes.ed$Diabetes_binary <- as_factor(diabetes.ed$Diabetes_binary)
 #make things reproducible with set.seed (I have no idea what number we are supposed to put here because I don't really know what this function does)
 set.seed(90)
 #create index
@@ -112,3 +114,25 @@ diabetes.test <- diabetes.ed[-train.index, ]
 
 
 # Model Selection
+
+## Lasso  
+Lasso regression is an extension of linear regression. It uses the the glmnet package.  
+```{r}
+fit.lasso <- train(Diabetes_binary ~ BMI+Age+Income+MentHlth+Sex+PhysHlth+ AnyHealthcare+HvyAlcoholConsump+NoDocbcCost, 
+                   data= diabetes.train,
+                   method= "glmnet",
+                   trControl= trainControl(method = "cv",
+                                           number=5),
+                   tuneGrid= expand.grid(alpha=1, lambda= seq(0,1, by=0.1)))
+```
+
+## Classification Trees  
+A classification tree is used to predict what class each region is using the most prevalent class as as the prediction. 
+```{r}
+fit.classtree <- train(Diabetes_binary ~ BMI+Age+Income+MentHlth+Sex+PhysHlth+ AnyHealthcare+HvyAlcoholConsump+NoDocbcCost, 
+                   data= diabetes.train,
+                   method= "rpart",
+                   trControl= trainControl(method = "cv",
+                                           number=5),
+                   tuneGrid= data.frame(cp= seq(0,1, by=0.001)))
+```
