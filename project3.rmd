@@ -123,54 +123,60 @@ diabetes.test.log <- diabetes.test %>%
 ```
 
 ## Lasso  
-Lasso regression can be an extension of linear regression or logistic regression. Here, we will use it with a logistic regression model since we are working with a categorical response variable.Lambda is the growth variable adn you want to increase that slowly. 
+Lasso regression can be an extension of linear regression or logistic regression. Here, we will use it with a logistic regression model since we are working with a categorical response variable. Lambda represents shrinkage. As we increase lambda, the variance decreases and bias increases. We want the lowest amount of variance without introducing a lot of bias to the model.  
+We will be fitting the model using the train function from the caret package. The glmnet method will ensure we are creating a lasso model.  
 ```{r}
 #create lasso logistic regression model
 fit.lasso <- train(Diabetes_binary ~ BMI+Age+Income+MentHlth+Sex+PhysHlth+ AnyHealthcare+HvyAlcoholConsump+NoDocbcCost, 
                    data= diabetes.train.log,
                    #select glmnet method
                    method= "glmnet",
-                   #calculate log loss metric
-                   metric= "logLoss",
                    #do cross validation
                    trControl= trainControl(method = "cv",
-                                           number=5),
+                                           number=5,
+                                           summaryFunction = mnLogLoss,
+                                           classProbs = TRUE),
+                   #calculate log loss metric
+                   metric= "logLoss",
                    #add tuning parameters
                    tuneGrid= expand.grid(alpha=1, lambda= seq(0,1, by=0.1)))
 #print results of lasso logistic regression model
 print(fit.lasso)
 ```
-Now we will select our best Lasso model using the `Accuracy` metric.
+Now we will select our best Lasso model using the `Log Loss` metric.
 ```{r}
 best.lasso <- fit.lasso$results %>% 
-  mutate(lambda = lambda, max = max(Accuracy)) %>% 
-  filter(Accuracy == max)
+  mutate(lambda = lambda, min = min(logLoss)) %>% 
+  filter(logLoss == min)
 paste("The best classification model is lambda=",best.lasso$lambda," ")
 ```
 
 ## Classification Trees  
-A classification tree is used to predict what class each region is using the most prevalent class (since we have a categorical response) as the prediction.
+A classification tree is used to predict what class each region is using the most prevalent class (since we have a categorical response) as the prediction. The cp (complexity Parameter) is used for determining the size of the classification tree. It is imposes a penalty when the tree has too many splits, and the higher the cp the smaller the tree is.  
+We will be fitting the model using the train function from the caret package. The rpart method will ensure we are creating a classification tree.  
 ```{r}
 #create classification tree model
 fit.classtree <- train(Diabetes_binary ~ BMI+Age+Income+MentHlth+Sex+PhysHlth+ AnyHealthcare+HvyAlcoholConsump+NoDocbcCost, 
                    data= diabetes.train.log,
                    #select rpart method
                    method= "rpart",
-                   #calculate Log Loss metric
-                   metric= "logLoss",
                    #do cross validation
                    trControl= trainControl(method = "cv",
-                                           number=5),
+                                           number=5,
+                                           summaryFunction = mnLogLoss,
+                                           classProbs = TRUE),
+                   #calculate log loss metric
+                   metric= "logLoss",
                    #add tuning parameters
                    tuneGrid= data.frame(cp= seq(0,1, by=0.001)))
 #print results of classification tree model
 print(fit.classtree)
 ```
-Now we will select our best Classification Tree model using the `Accuracy` metric.
+Now we will select our best Classification Tree model using the `Log Loss` metric.
 ```{r}
 best.classtree <- fit.classtree$results %>% 
-  mutate(cp = cp, max = max(Accuracy)) %>% 
-  filter(Accuracy == max)
+  mutate(cp = cp, min = min(logLoss)) %>% 
+  filter(logLoss == min)
 paste("The best classification model is cp=",best.classtree$cp," ")
 ```
 
@@ -179,28 +185,33 @@ paste("The best classification model is cp=",best.classtree$cp," ")
 ## Logistic Model Tree  
 
 ## Partial Least Squares Model  
-Partial Least Squares is used when predictors are highly correlated and determines the best model to use that covers the most variance with the least amount of predictors.
+Partial Least Squares is a dimension reduction strategy-determines which predictors are highly correlated and determines the best model to use that covers the most variance with the least amount of principal components. The PLS identifies principal components that summarizes the original predictors and and are related to the response variable. The ncomp tuning parameter represents the number of principal components included in the model.  
+We will be fitting the model using the train function from the caret package. The pls method will ensure we are creating a partial least squares model.  
 ```{r}
 #create PLS model
 fit.pls <- train(Diabetes_binary ~ BMI+Age+Income+MentHlth+Sex+PhysHlth+ AnyHealthcare+HvyAlcoholConsump+NoDocbcCost, 
                  data= diabetes.train.log,
                  #select pls method
                  method= "pls",
-                 #calculate log loss metric
-                 metric="logLoss",
+                 #center and sclae the data
+                 preProcess=c("center","scale"),
                  #do cross validation
                  trControl= trainControl(method = "cv",
-                                           number=5),
+                                           number=5,
+                                         summaryFunction = mnLogLoss,
+                                         classProbs = TRUE),
+                 #calculate log loss metric
+                 metric= "logLoss",
                  #add tuning parameters
                  tuneGrid= data.frame(ncomp=1:9))
 #print
 print(fit.pls)
 ```
-Now we will select our best PLS model using the `Accuracy` metric.
+Now we will select our best PLS model using the `log Loss` metric.
 ```{r}
 best.pls <- fit.pls$results %>% 
-  mutate(ncomp = ncomp, max = max(Accuracy)) %>% 
-  filter(Accuracy == max)
+  mutate(ncomp = ncomp, min = min(logLoss)) %>% 
+  filter(logLoss == min)
 paste("The best classification model is ncomp=",best.pls$ncomp," ")
 ```
 
@@ -209,9 +220,9 @@ paste("The best classification model is ncomp=",best.pls$ncomp," ")
 a
 b
 c
-d <- confusionMatrix(data = diabetes.test.log$Diabetes_binary, reference = predict(fit.lasso, newdata = diabetes.test.log))
-e <- confusionMatrix(data = diabetes.test.log$Diabetes_binary, reference = predict(fit.classtree, newdata = diabetes.test.log))
-f <- confusionMatrix(data = diabetes.test.log$Diabetes_binary, reference = predict(fit.pls, newdata = diabetes.test.log))
+d<- confusionMatrix(data = diabetes.test.log$Diabetes_binary, reference = predict(fit.lasso, newdata = diabetes.test.log))
+e<- confusionMatrix(data = diabetes.test.log$Diabetes_binary, reference = predict(fit.classtree, newdata = diabetes.test.log))
+f<- confusionMatrix(data = diabetes.test.log$Diabetes_binary, reference = predict(fit.pls, newdata = diabetes.test.log))
 ```  
 
 ```{r}
