@@ -213,7 +213,11 @@ In this case our `fit.log3` has the lowest log loss and is therefore our chosen 
 
 ## Lasso
 
+  Lasso regression can be an extension of linear regression or logistic regression. Here, we will use it with a logistic regression model since we are working with a categorical response variable. LASSO regression uses lambda, a growth variable, that you should increase slowly. LASSO is used to enhance the prediction capabilities of a model and it does this via shrinkage, where the data is shrunk towards the mean. Since LASSO improves our prediction capabilities and reduces overfitting it may be a prefered method to basic logistic regression. LASSO regression starts with the basic form of the model (in our case a logistic model). It then adds an extra term. This term is a penalty term that is based on the number of variables. This term is created by multiplying the absolute value of the sum of our coefficients (β1, β2, etc.) by our tuning parameter, lambda, mentioned above. The algorithm attempts to fit the model while minimizing our penalty term. Since the penalty term is dependent on the number of variables used, the LASSO model has built in variable selection, making it a better choice than logistic regression. When lambda equals 0 all variables are present, and the number of variables in the model decreases as lambda increases. LASSO is also known to be a good model for situations where there are high levels of multicollinearity. 
+
 ## Classification Trees
+
+  A classification tree is used to predict group membership and for classification problems (like ours), is usually done using the most prevalent class as the prediction. A classification tree is basically a map of binary decisions. Each branch of the tree is called a node and our final classifications can be seen on the leaves. At each node we see a variable split into 2 directions. These splits continue until we get to the leaves. In order to build a classification tree the algorithm will have to figure out what variables should be present at the nodes and in what order. This can be done via entropy, the gini index or variance. The gini index is used when the response variable is categorical like our `Diabetes_binary` variable. When fitting a single classification tree, typically pruning is needed. The more splits our tree has, the better it will do at classifying the data in our training dataset, however, at some point the prediction accuracy will start to decrease. In order to avoid overfitting our trees to our training data we prune them back which essentially means cutting off subtrees from our larger decision tree. We might want to use a decision tree because they are easy to understand and interpret and have built in variable selection. 
 
 ## Random Forest Models
 
@@ -252,7 +256,7 @@ Next we will look at some models that were not explained in class.
 
 ## Logistic Model Tree
 
-Since we are already familiar with logistic regression and decision trees we decided to take it a step further and model the data using logistic model trees. Model trees combine regression and trees to predict an outcome. The standard model tree is best for predicting numeric variables, which is why we are using the logistic model tree that works well for categorical variables like `Diabetes_binary`. Logistic model trees differ from standard decision trees in that each node has a logistic regression function instead of just a classification label. Since this could make the tree very complex, typically not all variables are used at each node.
+  Since we are already familiar with logistic regression and decision trees we decided to take it a step further and model the data using logistic model trees. Model trees combine regression and trees to predict an outcome. The standard model tree is best for predicting numeric variables, which is why we are using the logistic model tree that works well for categorical variables like `Diabetes_binary`. Logistic model trees differ from standard decision trees in that each node has a logistic regression function instead of just a classification label. Since this could make the tree very complex, typically not all variables are used at each node.
 
 We will fit the logistic model tree using the `train` function from the `caret` package. We will continue to use cross validation with 5 folds. We will specify the `method = LMT`. We are choosing to do 1 to 5 iterations as our tuning parameter.
 ```{r, message=FALSE, warning=FALSE}
@@ -283,7 +287,9 @@ best.lmt <- fit.lmt$results %>%
 paste("The best Logistic Model Tree is iteration =",best.lmt$iter," ")
 ```
 
+## Partial Leaset Square Model
 
+Partial Least Squares is used when predictors are highly correlated. The algorithm determines the best model covers the most variance with the smallest number of predictors. It sort of is a combination of principal component analysis and linear regression. In partial least squares regression, the predictors are reduced down to a smaller set of uncorrelated components called latent factors and then linear regression is performed on these new components. Partial least squares is a good option in cases where we have more predictor variables than observations or highly correlated predictors.
 
 # Final Model Selection
 Out of the 6 best models (one of each type) above we will now select the final best model.
