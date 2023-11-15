@@ -116,7 +116,7 @@ diabetes.test <- diabetes.ed[-train.index, ]
 # Model Selection
 
 ## Lasso  
-Lasso regression is an extension of linear regression. It uses the the glmnet package.  
+Lasso regression can be an extension of linear regression or logistic regression. Here, we will use it with a logistic regression model since we are working with a categorical response variable.You want the lambda that gives the smallest deviance. 
 ```{r}
 fit.lasso <- train(Diabetes_binary ~ BMI+Age+Income+MentHlth+Sex+PhysHlth+ AnyHealthcare+HvyAlcoholConsump+NoDocbcCost, 
                    data= diabetes.train,
@@ -124,10 +124,13 @@ fit.lasso <- train(Diabetes_binary ~ BMI+Age+Income+MentHlth+Sex+PhysHlth+ AnyHe
                    trControl= trainControl(method = "cv",
                                            number=5),
                    tuneGrid= expand.grid(alpha=1, lambda= seq(0,1, by=0.1)))
+#print results of lasso logistic regression model
+print(fit.lasso)
 ```
+The best lasso logistic regression model is `r `.
 
 ## Classification Trees  
-A classification tree is used to predict what class each region is using the most prevalent class as as the prediction. 
+A classification tree is used to predict what class each region is using the most prevalent class (since we have a categorical response) as the prediction.
 ```{r}
 fit.classtree <- train(Diabetes_binary ~ BMI+Age+Income+MentHlth+Sex+PhysHlth+ AnyHealthcare+HvyAlcoholConsump+NoDocbcCost, 
                    data= diabetes.train,
@@ -135,4 +138,12 @@ fit.classtree <- train(Diabetes_binary ~ BMI+Age+Income+MentHlth+Sex+PhysHlth+ A
                    trControl= trainControl(method = "cv",
                                            number=5),
                    tuneGrid= data.frame(cp= seq(0,1, by=0.001)))
+#print results of classification tree model
+print(fit.classtree)
+```
+The best classification model is `r `.  
+
+# Final Model Selection  
+```{r, warning=FALSE}
+
 ```
