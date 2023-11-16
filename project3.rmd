@@ -228,7 +228,7 @@ fit.log1 <- train(Diabetes_binary ~ AnyHealthcare + Sex + Age + HighChol, data =
                  # calculate log loss metric
                  metric = "logLoss",
                  #do cross validation
-                 trControl = trainControl(method = "cv", number = 5, summaryFunction = mnLogLoss, classProbs = TRUE)
+                 trControl = trainControl(method = "cv", number = 5, summaryFunction = mnLogLoss, classProbs = TRUE, savePredictions = TRUE)
                  )
 ```
 
@@ -245,7 +245,7 @@ fit.log2 <- train(Diabetes_binary ~ BMI + PhysActivity + MentHlth + Income , dat
                  # calculate log loss metric
                  metric = "logLoss",
                  #do cross validation
-                 trControl = trainControl(method = "cv", number = 5, summaryFunction = mnLogLoss, classProbs = TRUE)
+                 trControl = trainControl(method = "cv", number = 5, summaryFunction = mnLogLoss, classProbs = TRUE, savePredictions = TRUE)
                  )
 ```
 
@@ -262,7 +262,7 @@ fit.log3 <- train(Diabetes_binary ~ HighBP + Veggies + GenHlth + DiffWalk, data 
                  # calculate log loss metric
                  metric = "logLoss",
                  #do cross validation
-                 trControl = trainControl(method = "cv", number = 5, summaryFunction = mnLogLoss, classProbs = TRUE)
+                 trControl = trainControl(method = "cv", number = 5, summaryFunction = mnLogLoss, classProbs = TRUE, savePredictions = TRUE)
                  )
 ```
 
@@ -290,7 +290,8 @@ fit.lasso <- train(Diabetes_binary ~ BMI+Age+Income+MentHlth+Sex+PhysHlth+ AnyHe
                    trControl= trainControl(method = "cv",
                                            number=5,
                                            summaryFunction = mnLogLoss,
-                                           classProbs = TRUE),
+                                           classProbs = TRUE,
+                                           savePredictions = TRUE),
                    #calculate log loss metric
                    metric= "logLoss",
                    #add tuning parameters
@@ -318,7 +319,8 @@ fit.classtree <- train(Diabetes_binary ~ BMI+Age+Income+MentHlth+Sex+PhysHlth+ A
                    trControl= trainControl(method = "cv",
                                            number=5,
                                            summaryFunction = mnLogLoss,
-                                           classProbs = TRUE),
+                                           classProbs = TRUE,
+                                           savePredictions = TRUE),
                    #calculate log loss metric
                    metric= "logLoss",
                    #add tuning parameters
@@ -348,7 +350,8 @@ fit.pls <- train(Diabetes_binary ~ BMI+Age+Income+MentHlth+Sex+PhysHlth+ AnyHeal
                  trControl= trainControl(method = "cv",
                                            number=5,
                                          summaryFunction = mnLogLoss,
-                                         classProbs = TRUE),
+                                         classProbs = TRUE,
+                                         savePredictions = TRUE),
                  #calculate log loss metric
                  metric= "logLoss",
                  #add tuning parameters
@@ -379,7 +382,7 @@ fit.rf<- train(Diabetes_binary ~ ., data = diabetes.train.log,
                  # calculate log loss metric
                  metric = "logLoss",
                  #do cross validation
-                 trControl = trainControl(method = "cv", number = 5, summaryFunction = mnLogLoss, classProbs = TRUE),
+                 trControl = trainControl(method = "cv", number = 5, summaryFunction = mnLogLoss, classProbs = TRUE, savePredictions = TRUE),
                  #add tuning parameter
                  tuneGrid = data.frame(mtry = 1:21)
                  )
@@ -414,7 +417,7 @@ fit.lmt<- train(Diabetes_binary ~ . , data = diabetes.train.log,
                  #preprocess data
                  preProcess = c("center", "scale"),
                  #do cross validation
-                 trControl = trainControl(method = "cv", number = 5, summaryFunction = mnLogLoss, classProbs = TRUE),
+                 trControl = trainControl(method = "cv", number = 5, summaryFunction = mnLogLoss, classProbs = TRUE, savePredictions = TRUE),
                  #add tuning parameter
                  tuneGrid = data.frame(iter = 1:5)
                  )
@@ -438,42 +441,28 @@ Out of the 6 best models (one of each type) above we will now select the final b
 Using the `confusionMatrix` function, we will test our models on the test sets. 
 ```{r, warning=FALSE}
 a<- confusionMatrix(data = diabetes.test.log$Diabetes_binary, reference = predict(fit.log3, newdata = diabetes.test.log))
-pred.a <- predict(fit.log3, newdata = diabetes.test.log)
 b<- confusionMatrix(data = diabetes.test.log$Diabetes_binary, reference = predict(fit.rf, newdata = diabetes.test.log))
 c<- confusionMatrix(data = diabetes.test.log$Diabetes_binary, reference = predict(fit.ob, newdata = diabetes.test.log))
 d<- confusionMatrix(data = diabetes.test.log$Diabetes_binary, reference = predict(fit.lasso, newdata = diabetes.test.log))
 e<- confusionMatrix(data = diabetes.test.log$Diabetes_binary, reference = predict(fit.classtree, newdata = diabetes.test.log))
 f<- confusionMatrix(data = diabetes.test.log$Diabetes_binary, reference = predict(fit.pls, newdata = diabetes.test.log))
-pred.a<- predict(fit.log3, newdata = diabetes.test.log)
-pred.b<- predict(fit.rf, newdata = diabetes.test.log)
-pred.c<- predict(fit.ob, newdata = diabetes.test.log)
-pred.d <- predict(fit.lasso, newdata = diabetes.test.log)
-pred.e<- predict(fit.classtree, newdata = diabetes.test.log)
-pred.f<- predict(fit.pls, newdata = diabetes.test.log)
+#create the predictions for each model using the test set
+pred.a<- data.frame(obs=diabetes.test.log$Diabetes_binary,pred=predict(fit.log3, newdata = diabetes.test.log),predict(fit.log3, newdata = diabetes.test.log, type="prob"))
+pred.b<- data.frame(obs=diabetes.test.log$Diabetes_binary,pred=predict(fit.rf, newdata = diabetes.test.log),predict(fit.rf, newdata = diabetes.test.log, type="prob"))
+pred.c<- data.frame(obs=diabetes.test.log$Diabetes_binary,pred=predict(fit.ob, newdata = diabetes.test.log),predict(fit.ob, newdata = diabetes.test.log, type="prob"))
+pred.d<- data.frame(obs=diabetes.test.log$Diabetes_binary,pred=predict(fit.lasso, newdata = diabetes.test.log),predict(fit.lasso, newdata = diabetes.test.log, type="prob"))
+pred.e<- data.frame(obs=diabetes.test.log$Diabetes_binary,pred=predict(fit.classtree, newdata = diabetes.test.log),predict(fit.classtree, newdata = diabetes.test.log, type="prob"))
+pred.f<- data.frame(obs=diabetes.test.log$Diabetes_binary,pred=predict(fit.pls, newdata = diabetes.test.log),predict(fit.pls, newdata = diabetes.test.log, type="prob"))
 ```
 
 ```{r}
-#create function for calculating LogLoss
-LogLoss=function(actual, predicted)
-{
-  result=-1/length(actual)*(sum((actual*log(predicted)+(1-actual)*log(1-predicted))))
-  return(result)
-}
-#turn factors to numeric
-diabetes.test.log$diabetesLL <- as.numeric(ifelse(diabetes.test.log$Diabetes_binary == "no", 0, 1))
-pred.a<- as.numeric(ifelse (pred.a=="no",0,1))
-pred.b<- as.numeric(ifelse (pred.b=="no",0,1))
-pred.c<- as.numeric(ifelse (pred.c=="no",0,1))
-pred.d<- as.numeric(ifelse (pred.d=="no",0,1))
-pred.e<- as.numeric(ifelse (pred.e=="no",0,1))
-pred.f<- as.numeric(ifelse (pred.f=="no",0,1))
-#calculate LogLoss using the function
-ll.a<- LogLoss(diabetes.test.log$diabetesLL,pred.a)
-ll.b<- LogLoss(diabetes.test.log$diabetesLL,pred.b)
-ll.c<- LogLoss(diabetes.test.log$diabetesLL,pred.c)
-ll.d<- LogLoss(diabetes.test.log$diabetesLL,pred.d)
-ll.e<- LogLoss(diabetes.test.log$diabetesLL,pred.e)
-ll.f<- LogLoss(diabetes.test.log$diabetesLL,pred.f)
+#calculate LogLoss using the mnLogLoss function
+ll.a<- mnLogLoss(pred.a, lev = levels(pred.a$obs))
+ll.b<- mnLogLoss(pred.b, lev = levels(pred.b$obs))
+ll.c<- mnLogLoss(pred.c, lev = levels(pred.c$obs))
+ll.d<- mnLogLoss(pred.d, lev = levels(pred.d$obs))
+ll.e<- mnLogLoss(pred.e, lev = levels(pred.e$obs))
+ll.f<- mnLogLoss(pred.f, lev = levels(pred.f$obs))
 ```  
 Now we will add each of the model's and their accuracy to a tibble. The reason we are using the accuracy here is because we want to see how often our models correctly predicted on the test sets.
 ```{r}
@@ -481,13 +470,14 @@ name<- c("fit.log3", "fit.rf", "fit.lmt", "fit.lasso", "fit.classtree", "fit.pls
 accuracy <- c(a[[3]][1],b[[3]][1],c[[3]][1],d[[3]][1],e[[3]][1],f[[3]][1])
 log_loss<- c(ll.a,ll.b,ll.c,ll.d,ll.e,ll.f)
 all.fits<- tibble(name, accuracy, log_loss)
+all.fits
 ```
 
 Next we will use our tibble with all the model's and their accuracy to chose the best model. The model that was most accurate at predicting in the test set will be the winner so we will use the `max` function to find the model with the highest accuracy.
 ```{r}
 best<- all.fits %>% 
-  mutate(name== name, best = max(accuracy)) %>% 
-  filter(best == accuracy)
+  mutate(name== name, best = min(log_loss)) %>% 
+  filter(best == log_loss)
 ```
 
 Now we will use the `paste` function to give us the result of the best model.
