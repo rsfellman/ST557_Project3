@@ -1,8 +1,9 @@
 ---
 title: "Project 3"
 author: "Rachel Fellman & Sabrina Dahl"
+output : github_document
 params: 
-  Ed: 1
+  Ed: 6
 ---
 
 ```{r setup, include=FALSE}
@@ -52,7 +53,7 @@ First We will look at the graph of diabetes proportion vs Physical Health. We wi
 #group by PhysHlth to create graph of proportion of people with diabetes at each number of days with illness/injury
 physHlth.sum <- diabetes.ed %>% 
   group_by(PhysHlth) %>% 
-  summarise(proportion.diabetes = mean(Diabetes_binary), n = n())
+  dplyr::summarise(proportion.diabetes = mean(Diabetes_binary), n = n())
 # create plot
 ggplot(physHlth.sum, aes(x = PhysHlth, y = proportion.diabetes, size = n)) +
   geom_point(stat = "identity")+ 
@@ -115,7 +116,7 @@ We will also look at a scatter plot of the proportion of people with diabetes ac
 # group by BMI to create graph of proportion of people with diabetes at each BMI.
 bmi.sum <- diabetes.ed %>% 
   group_by(BMI) %>% 
-  summarise(proportion.diabetes = mean(Diabetes_binary), n = n())
+  dplyr::summarise(proportion.diabetes = mean(Diabetes_binary), n = n())
 # create plot
 ggplot(bmi.sum, aes(x = BMI, y = proportion.diabetes, size = n)) +
   geom_point(stat = "identity")+ 
@@ -130,7 +131,7 @@ Next we will look at a Graph of proportion of Diabetes for different ages. First
 # group by BMI to create graph of proportion of people with diabetes at each age.
 age.sum <- diabetes.ed %>% 
   group_by(Age) %>% 
-  summarise(proportion.diabetes = mean(Diabetes_binary))
+  dplyr::summarise(proportion.diabetes = mean(Diabetes_binary))
 # create plot
 ggplot(age.sum, aes(x = Age, y = proportion.diabetes)) +
   geom_point(stat = "identity")+ 
@@ -144,7 +145,7 @@ Next we will create a graph of diabetes proportion vs income. First we will crea
 # group by income to create graph of proportion of people with diabetes at each income for education 1.
 income.sum <- diabetes.ed %>% 
   group_by(Income) %>% 
-  summarise(proportion.diabetes = mean(Diabetes_binary), n= n())
+  dplyr::summarise(proportion.diabetes = mean(Diabetes_binary), n= n())
 # create plot
 ggplot(income.sum, aes(x = Income, y = proportion.diabetes, size = n)) +
   geom_point(stat = "identity")+ 
@@ -303,7 +304,7 @@ paste("The best logistic regression model with the lowest log loss is", best.log
 Now that we know what LASSO is we will fit the model using the `train` function from the `caret` package with `method = "glmnet"` to ensure we are creating a lasso model.  
 ```{r}
 #create lasso logistic regression model
-fit.lasso <- train(Diabetes_binary ~ ., 
+fit.lasso <- train(Diabetes_binary ~ BMI+Age+Income+MentHlth+Sex+PhysHlth+ AnyHealthcare+HvyAlcoholConsump+NoDocbcCost, 
                    data= diabetes.train.log,
                    #select glmnet method
                    method= "glmnet",
@@ -336,7 +337,7 @@ We will be fitting the model using the `train` function from the `caret` package
 
 ```{r}
 #create classification tree model
-fit.classtree <- train(Diabetes_binary ~ ., 
+fit.classtree <- train(Diabetes_binary ~ BMI+Age+Income+MentHlth+Sex+PhysHlth+ AnyHealthcare+HvyAlcoholConsump+NoDocbcCost, 
                    data= diabetes.train.log,
                    #select rpart method
                    method= "rpart",
@@ -348,7 +349,7 @@ fit.classtree <- train(Diabetes_binary ~ .,
                    #calculate log loss metric
                    metric= "logLoss",
                    #add tuning parameters
-                   tuneGrid= data.frame(cp= seq(0,1, by=0.001)))
+                   tuneGrid= data.frame(cp= seq(0,.01, by=0.001)))
 #print results of classification tree model
 print(fit.classtree)
 ```
@@ -366,10 +367,17 @@ paste("The best classification tree model is cp=",best.classtree$cp," ")
   
   In a random forest model, the algorithm cannot choose from the majority of the existing predictors. This is useful in the case where extra strong predictors exist. A regular bagged tree model will likely use said strong predictor for the first split every time, and our resulting trees will look very similar and likely be highly correlated. The average prediction of many correlated tree models does not lead to much of a reduction in the variance. Forcing the model to choose from a subset of predictors, causes the resulting trees to be less correlated and therefore the random forest method leads to a reduction in variance and more reliable prediction. A basic classification tree can be non-robust and small changes in the data can lead to large alterations in the result. Bagging and random forest models aggregate many decision trees to increase the predictive performance of these models. With more models, we get more accurate predictions. Basic classification trees are very susceptible to being overfit to our data since their accuracy improves with each split. The multiple trees created in a random forest model reduces the chances of overfitting our model making them superior when it comes to prediction. However, we do lose the interpretability of a singular classification tree when we use random forest models.
 
-Now that we have an understanding of the random forest model we will fit a random forest model to our data. Once again we will do cross validation with 5 folds.
+Now that we have an understanding of the random forest model we will fit a random forest model to our data. Once again we will do cross validation with 5 folds. 
+Although I would like to use all variables here, it takes too long (like multiple hours) for r to process it so we are only using 3 variables to speed it up. I'm pretty sure my computer does not have enough RAM for this. Just the 3 variables was not enough so up we will also use a subset of our training set. I know this is not a good practice but it takes hours to run otherwise.
+```{r}
+rf.sub <- sample(1:nrow(diabetes.train.log), size = nrow(diabetes.train.log)*.4)
+diabetes.train.rf <- diabetes.train.log[rf.sub, ]
+```
+
+
 ```{r}
 #create random forest model
-fit.rf<- train(Diabetes_binary ~ ., data = diabetes.train.log,
+fit.rf<- train(Diabetes_binary ~ BMI+Age+Income, data = diabetes.train.rf,
                  #select rf method
                  method = "rf",
                  # calculate log loss metric
@@ -377,7 +385,7 @@ fit.rf<- train(Diabetes_binary ~ ., data = diabetes.train.log,
                  #do cross validation
                  trControl = trainControl(method = "cv", number = 5, summaryFunction = mnLogLoss, classProbs = TRUE),
                  #add tuning parameter
-                 tuneGrid = data.frame(mtry = 1:21)
+                 tuneGrid = data.frame(mtry = 2:3)
                  )
 ```
 
@@ -391,7 +399,7 @@ best.rf <- fit.rf$results %>%
   filter(logLoss == min)
 paste("The best random forest model is mtry =",best.rf$mtry," ")
 ```
-`mtry` is a tuning parameter that gives us the number of randomly selected predictors we will use. We tested the model on all numbers of predictors in the dataset (1 to 21).
+`mtry` is a tuning parameter that gives us the number of randomly selected predictors we will use. We tested the model on a subset of the number of predictors in the dataset ( the total being 21).
 
 
 Next we will look at some models that were not explained in class.
@@ -400,20 +408,18 @@ Next we will look at some models that were not explained in class.
 
   Since we are already familiar with logistic regression and decision trees we decided to take it a step further and model the data using logistic model trees. Model trees combine regression and trees to predict an outcome. The standard model tree is best for predicting numeric variables, which is why we are using the logistic model tree that works well for categorical variables like `Diabetes_binary`. Logistic model trees differ from standard decision trees in that each node has a logistic regression function instead of just a classification label. Since this could make the tree very complex, typically not all variables are used at each node.
 
-We will fit the logistic model tree using the `train` function from the `caret` package. We will continue to use cross validation with 5 folds. We will specify the `method = LMT`. We are choosing to do 1 to 5 iterations as our tuning parameter.
+We will fit the logistic model tree using the `train` function from the `caret` package. We will continue to use cross validation with 5 folds. We will specify the `method = LMT`. We are choosing to do 2 to 4 iterations as our tuning parameter. Here we are also only using a few predictors because R is taking too long to (once again hours) run it with the full number of predictors.
 ```{r, message=FALSE, warning=FALSE}
 #create oblique model
-fit.lmt<- train(Diabetes_binary ~ . , data = diabetes.train.log,
+fit.lmt<- train(Diabetes_binary ~ BMI+Age+Income , data = diabetes.train.log,
                  #select rf method
                  method = "LMT",
                  # calculate log loss metric
                  metric = "logLoss",
-                 #preprocess data
-                 preProcess = c("center", "scale"),
                  #do cross validation
                  trControl = trainControl(method = "cv", number = 5, summaryFunction = mnLogLoss, classProbs = TRUE),
                  #add tuning parameter
-                 tuneGrid = data.frame(iter = 1:5)
+                 tuneGrid = data.frame(iter = 2:4)
                  )
 ```
 ```{r}
@@ -435,7 +441,7 @@ Partial Least Squares is a dimension-reduction technique. The algorithm determin
 
 
 We will be fitting the model using the `train` function from the `caret` package. Setting `method = "pls"` will ensure we are creating a partial least squares model. The `ncomp` tuning parameter represents the number of principal components included in the model.
-```{r}
+```{r, warning=FALSE}
 #create PLS model
 fit.pls <- train(Diabetes_binary ~  BMI+Age+Income+MentHlth+Sex+PhysHlth+AnyHealthcare+HvyAlcoholConsump+NoDocbcCost, 
                  data= diabetes.train.log,
