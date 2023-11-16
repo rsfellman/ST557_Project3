@@ -1,6 +1,6 @@
 Project 3
 ================
-Rachel Fellman & Sabrina Dahl
+Rachel Fellman & Sabrina Dahl 
 
 # Introduction
 
