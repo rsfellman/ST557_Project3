@@ -12,7 +12,7 @@ The following packages were used to in the creation of this project:
 `caret`  
 `rmarkdown`  
 
-Used in conjunction with caret to create the models:
+Used in conjunction with caret to create the models:  
 `Rweka`  
 `rjava`  
 `randomForest`  
@@ -47,3 +47,8 @@ apply(reports, MARGIN = 1,
 # Links to files
 
 [Education Level 1](Education_level1.html)
+[Education Level 3](Education_level3.html)
+[Education Level 4](Education_level4.html)
+[Education Level 5](Education_level5.html)
+[Education Level 6](Education_level6.html)
+
