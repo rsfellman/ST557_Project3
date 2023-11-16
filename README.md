@@ -3,7 +3,7 @@ ST558 Project 3
 Rachel Fellman & Sabrina Dahl
 
 # Description
-This repository is where Sabrina Dahl and Rachel Fellman will be working together on project 3 for ST 558. We will analyze diabetes data using 6 different model types and create 5 output files fo different levels of the `Educatoin` variable that will be linked below.
+This repository is where Sabrina Dahl and Rachel Fellman will be working together on project 3 for ST 558. We will analyze diabetes data using 6 different model types and create 5 output files fo different levels of the `Education` variable that will be linked below.
 
 # R Packages
 The following packages were used to in the creation of this project:
