@@ -9,7 +9,7 @@ params:
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(caret)
-#might need to add rweka and or rjava
+library(RWeka)
 ```
 
 # Introduction
@@ -40,21 +40,12 @@ diabetes.1 <- diabetes %>%
 
 We will start by doing some exploratory data analysis on the full data set. 
 
-
-Since we will be creating models for different education levels, we will split up the data into smaller data set for each of the 5 education levels to do EDA. We will do this using our parameters
-
-
 Since we will be creating models for different education levels, we will split up the data into smaller data set for each of the 5 education levels to do EDA. We will do this using our parameters.
-
-
-Since we will be creating models for different education levels, we will split up the data into smaller data set for each of the 5 education levels to do EDA. We will do this using our parameters
-
 
 ```{r}
 #create subsetted data set for each level of education using the params.
 diabetes.ed <- diabetes.1 %>% 
   filter(Education == params$Ed)
-
 ```  
 
 We will also look at the graph of diabetes proportion vs their Physical Health. 
@@ -110,10 +101,6 @@ Doc.sum <- diabetes.ed %>%
 ggplot(Doc.sum, aes(x=NoDocbcCost, y=proportion.diabetes))+
   geom_bar(stat="identity", aes(fill=Gender),position="stack")
 ```
-
-
-```
-
 
 We will start by looking at a scatter plot of the proportion of people with diabetes across BMI levels. First we will create the proportion variable and then we will use `ggplot` with `geom_point` to create the graph.
 
@@ -174,10 +161,7 @@ diabetes.ed %>%
   summarise(avg = mean(MentHlth), sd = sd(MentHlth))
 ```
 
-In this table we can look at the differences between the averages of bad mental health days for men and women who have diabetes and who do not. Here it can be helpful to examine if there is a higher average for those with diabetes than for those without. You can also look for any differences between the averages of those with diabetes who are men and those with diabetes who are women. 
-
-
-
+In this table we can look at the differences between the averages of bad mental health days for men and women who have diabetes and who do not. Here it can be helpful to examine if there is a higher average for those with diabetes than for those without. You can also look for any differences between the averages of those with diabetes who are men and those with diabetes who are women.  
 
 # Modeling
 
@@ -200,13 +184,7 @@ train.index <- createDataPartition(diabetes.ed$Diabetes_binary, p = .7, list = F
 #create train and test sets
 diabetes.train <- diabetes.ed[train.index, ]
 diabetes.test <- diabetes.ed[-train.index, ]
-```
-
-
-## Log Loss  
-
-## Logistic Regression  
-
+```  
 
 ## Log Loss
 
@@ -236,117 +214,6 @@ diabetes.train.log <- diabetes.train %>%
 diabetes.test.log <- diabetes.test %>% 
   mutate(Diabetes_binary = as_factor(ifelse(Diabetes_binary == 1, "yes", "no")))
 ```
-
-
-## Lasso  
-Lasso regression can be an extension of linear regression or logistic regression. Here, we will use it with a logistic regression model since we are working with a categorical response variable. Lambda represents shrinkage. As we increase lambda, the variance decreases and bias increases. We want the lowest amount of variance without introducing a lot of bias to the model.  
-We will be fitting the model using the train function from the caret package. The glmnet method will ensure we are creating a lasso model.  
-```{r}
-#create lasso logistic regression model
-fit.lasso <- train(Diabetes_binary ~ BMI+Age+Income+MentHlth+Sex+PhysHlth+ AnyHealthcare+HvyAlcoholConsump+NoDocbcCost, 
-                   data= diabetes.train.log,
-                   #select glmnet method
-                   method= "glmnet",
-                   #do cross validation
-                   trControl= trainControl(method = "cv",
-                                           number=5,
-                                           summaryFunction = mnLogLoss,
-                                           classProbs = TRUE),
-                   #calculate log loss metric
-                   metric= "logLoss",
-                   #add tuning parameters
-                   tuneGrid= expand.grid(alpha=1, lambda= seq(0,1, by=0.1)))
-#print results of lasso logistic regression model
-print(fit.lasso)
-```
-Now we will select our best Lasso model using the `Log Loss` metric.
-```{r}
-best.lasso <- fit.lasso$results %>% 
-  mutate(lambda = lambda, min = min(logLoss)) %>% 
-  filter(logLoss == min)
-paste("The best classification model is lambda=",best.lasso$lambda," ")
-```
-
-## Classification Trees  
-A classification tree is used to predict what class each region is using the most prevalent class (since we have a categorical response) as the prediction. The cp (complexity Parameter) is used for determining the size of the classification tree. It is imposes a penalty when the tree has too many splits, and the higher the cp the smaller the tree is.  
-We will be fitting the model using the train function from the caret package. The rpart method will ensure we are creating a classification tree.  
-```{r}
-#create classification tree model
-fit.classtree <- train(Diabetes_binary ~ BMI+Age+Income+MentHlth+Sex+PhysHlth+ AnyHealthcare+HvyAlcoholConsump+NoDocbcCost, 
-                   data= diabetes.train.log,
-                   #select rpart method
-                   method= "rpart",
-                   #do cross validation
-                   trControl= trainControl(method = "cv",
-                                           number=5,
-                                           summaryFunction = mnLogLoss,
-                                           classProbs = TRUE),
-                   #calculate log loss metric
-                   metric= "logLoss",
-                   #add tuning parameters
-                   tuneGrid= data.frame(cp= seq(0,1, by=0.001)))
-#print results of classification tree model
-print(fit.classtree)
-```
-Now we will select our best Classification Tree model using the `Log Loss` metric.
-```{r}
-best.classtree <- fit.classtree$results %>% 
-  mutate(cp = cp, min = min(logLoss)) %>% 
-  filter(logLoss == min)
-paste("The best classification model is cp=",best.classtree$cp," ")
-```
-
-## Random Forest Models  
-
-## Logistic Model Tree  
-
-## Partial Least Squares Model  
-Partial Least Squares is a dimension reduction strategy-determines which predictors are highly correlated and determines the best model to use that covers the most variance with the least amount of principal components. The PLS identifies principal components that summarizes the original predictors and and are related to the response variable. The ncomp tuning parameter represents the number of principal components included in the model.  
-We will be fitting the model using the train function from the caret package. The pls method will ensure we are creating a partial least squares model.  
-```{r}
-#create PLS model
-fit.pls <- train(Diabetes_binary ~ BMI+Age+Income+MentHlth+Sex+PhysHlth+ AnyHealthcare+HvyAlcoholConsump+NoDocbcCost, 
-                 data= diabetes.train.log,
-                 #select pls method
-                 method= "pls",
-                 #center and sclae the data
-                 preProcess=c("center","scale"),
-                 #do cross validation
-                 trControl= trainControl(method = "cv",
-                                           number=5,
-                                         summaryFunction = mnLogLoss,
-                                         classProbs = TRUE),
-                 #calculate log loss metric
-                 metric= "logLoss",
-                 #add tuning parameters
-                 tuneGrid= data.frame(ncomp=1:9))
-#print
-print(fit.pls)
-```
-Now we will select our best PLS model using the `log Loss` metric.
-```{r}
-best.pls <- fit.pls$results %>% 
-  mutate(ncomp = ncomp, min = min(logLoss)) %>% 
-  filter(logLoss == min)
-paste("The best classification model is ncomp=",best.pls$ncomp," ")
-```
-
-# Final Model Selection  
-```{r, warning=FALSE}
-a
-b
-c
-d<- confusionMatrix(data = diabetes.test.log$Diabetes_binary, reference = predict(fit.lasso, newdata = diabetes.test.log))
-e<- confusionMatrix(data = diabetes.test.log$Diabetes_binary, reference = predict(fit.classtree, newdata = diabetes.test.log))
-f<- confusionMatrix(data = diabetes.test.log$Diabetes_binary, reference = predict(fit.pls, newdata = diabetes.test.log))
-```  
-
-```{r}
-name<- c("fit.log3", "fit.rf", "fit.lmt", "fit.lasso", "fit.classtree","fit.pls")
-accuracy <- c(a[[3]][1],b[[3]][1],c[[3]][1],d[[3]][1],e[[3]][1],f[[3]][1])
-all.fits<- tibble(name, accuracy)
-```
-
 
 The first model will use the variables `AnyHealthcare`, `Sex`, `Age`, and `HighChol`.
 ```{r}
@@ -409,15 +276,93 @@ print(fit.log2)
 ```{r}
 print(fit.log3)
 ```
-In this case our `fit.log3` has the lowest log loss and is therefore our chosen model out of the 3 logistic regression models. 
+In this case our `fit.log3` has the lowest log loss and is therefore our chosen model out of the 3 logistic regression models.  
 
-## Lasso
+## Lasso  
+Lasso regression can be an extension of linear regression or logistic regression. Here, we will use it with a logistic regression model since we are working with a categorical response variable. Lambda represents shrinkage. LASSO regression uses lambda, a growth variable, that you should increase slowly. LASSO is used to enhance the prediction capabilities of a model and it does this via shrinkage, where the data is shrunk towards the mean. Since LASSO improves our prediction capabilities and reduces overfitting it may be a prefered method to basic logistic regression. LASSO regression starts with the basic form of the model (in our case a logistic model). It then adds an extra term. This term is a penalty term that is based on the number of variables. This term is created by multiplying the absolute value of the sum of our coefficients (β1, β2, etc.) by our tuning parameter, lambda, mentioned above. The algorithm attempts to fit the model while minimizing our penalty term. Since the penalty term is dependent on the number of variables used, the LASSO model has built in variable selection, making it a better choice than logistic regression. When lambda equals 0 all variables are present, and the number of variables in the model decreases as lambda increases. LASSO is also known to be a good model for situations where there are high levels of multicollinearity.  
+```{r}
+#create lasso logistic regression model
+fit.lasso <- train(Diabetes_binary ~ BMI+Age+Income+MentHlth+Sex+PhysHlth+ AnyHealthcare+HvyAlcoholConsump+NoDocbcCost, 
+                   data= diabetes.train.log,
+                   #select glmnet method
+                   method= "glmnet",
+                   #do cross validation
+                   trControl= trainControl(method = "cv",
+                                           number=5,
+                                           summaryFunction = mnLogLoss,
+                                           classProbs = TRUE),
+                   #calculate log loss metric
+                   metric= "logLoss",
+                   #add tuning parameters
+                   tuneGrid= expand.grid(alpha=1, lambda= seq(0,1, by=0.1)))
+#print results of lasso logistic regression model
+print(fit.lasso)
+```
+Now we will select our best Lasso model using the `Log Loss` metric.
+```{r}
+best.lasso <- fit.lasso$results %>% 
+  mutate(lambda = lambda, min = min(logLoss)) %>% 
+  filter(logLoss == min)
+paste("The best classification model is lambda=",best.lasso$lambda," ")
+```
 
-  Lasso regression can be an extension of linear regression or logistic regression. Here, we will use it with a logistic regression model since we are working with a categorical response variable. LASSO regression uses lambda, a growth variable, that you should increase slowly. LASSO is used to enhance the prediction capabilities of a model and it does this via shrinkage, where the data is shrunk towards the mean. Since LASSO improves our prediction capabilities and reduces overfitting it may be a prefered method to basic logistic regression. LASSO regression starts with the basic form of the model (in our case a logistic model). It then adds an extra term. This term is a penalty term that is based on the number of variables. This term is created by multiplying the absolute value of the sum of our coefficients (β1, β2, etc.) by our tuning parameter, lambda, mentioned above. The algorithm attempts to fit the model while minimizing our penalty term. Since the penalty term is dependent on the number of variables used, the LASSO model has built in variable selection, making it a better choice than logistic regression. When lambda equals 0 all variables are present, and the number of variables in the model decreases as lambda increases. LASSO is also known to be a good model for situations where there are high levels of multicollinearity. 
+## Classification Trees  
+A classification tree is used to predict group membership and for classification problems (like ours), is usually done using the most prevalent class as the prediction. A classification tree is basically a map of binary decisions. Each branch of the tree is called a node and our final classifications can be seen on the leaves. At each node we see a variable split into 2 directions. These splits continue until we get to the leaves. In order to build a classification tree the algorithm will have to figure out what variables should be present at the nodes and in what order. This can be done via entropy, the gini index or variance. The gini index is used when the response variable is categorical like our `Diabetes_binary` variable. When fitting a single classification tree, typically pruning is needed. The more splits our tree has, the better it will do at classifying the data in our training dataset, however, at some point the prediction accuracy will start to decrease. In order to avoid overfitting our trees to our training data we prune them back which essentially means cutting off subtrees from our larger decision tree. We might want to use a decision tree because they are easy to understand and interpret and have built in variable selection.  
+```{r}
+#create classification tree model
+fit.classtree <- train(Diabetes_binary ~ BMI+Age+Income+MentHlth+Sex+PhysHlth+ AnyHealthcare+HvyAlcoholConsump+NoDocbcCost, 
+                   data= diabetes.train.log,
+                   #select rpart method
+                   method= "rpart",
+                   #do cross validation
+                   trControl= trainControl(method = "cv",
+                                           number=5,
+                                           summaryFunction = mnLogLoss,
+                                           classProbs = TRUE),
+                   #calculate log loss metric
+                   metric= "logLoss",
+                   #add tuning parameters
+                   tuneGrid= data.frame(cp= seq(0,1, by=0.001)))
+#print results of classification tree model
+print(fit.classtree)
+```
+Now we will select our best Classification Tree model using the `Log Loss` metric.
+```{r}
+best.classtree <- fit.classtree$results %>% 
+  mutate(cp = cp, min = min(logLoss)) %>% 
+  filter(logLoss == min)
+paste("The best classification model is cp=",best.classtree$cp," ")
+```  
 
-## Classification Trees
-
-  A classification tree is used to predict group membership and for classification problems (like ours), is usually done using the most prevalent class as the prediction. A classification tree is basically a map of binary decisions. Each branch of the tree is called a node and our final classifications can be seen on the leaves. At each node we see a variable split into 2 directions. These splits continue until we get to the leaves. In order to build a classification tree the algorithm will have to figure out what variables should be present at the nodes and in what order. This can be done via entropy, the gini index or variance. The gini index is used when the response variable is categorical like our `Diabetes_binary` variable. When fitting a single classification tree, typically pruning is needed. The more splits our tree has, the better it will do at classifying the data in our training dataset, however, at some point the prediction accuracy will start to decrease. In order to avoid overfitting our trees to our training data we prune them back which essentially means cutting off subtrees from our larger decision tree. We might want to use a decision tree because they are easy to understand and interpret and have built in variable selection. 
+## Partial Least Squares Model  
+Partial Least Squares is used when predictors are highly correlated. The algorithm determines the best model covers the most variance with the smallest number of predictors. It sort of is a combination of principal component analysis and linear regression. In partial least squares regression, the predictors are reduced down to a smaller set of uncorrelated components called latent factors and then linear regression is performed on these new components. Partial least squares is a good option in cases where we have more predictor variables than observations or highly correlated predictors  
+```{r}
+#create PLS model
+fit.pls <- train(Diabetes_binary ~ BMI+Age+Income+MentHlth+Sex+PhysHlth+ AnyHealthcare+HvyAlcoholConsump+NoDocbcCost, 
+                 data= diabetes.train.log,
+                 #select pls method
+                 method= "pls",
+                 #center and sclae the data
+                 preProcess=c("center","scale"),
+                 #do cross validation
+                 trControl= trainControl(method = "cv",
+                                           number=5,
+                                         summaryFunction = mnLogLoss,
+                                         classProbs = TRUE),
+                 #calculate log loss metric
+                 metric= "logLoss",
+                 #add tuning parameters
+                 tuneGrid= data.frame(ncomp=1:9))
+#print
+print(fit.pls)
+```
+Now we will select our best PLS model using the `log Loss` metric.
+```{r}
+best.pls <- fit.pls$results %>% 
+  mutate(ncomp = ncomp, min = min(logLoss)) %>% 
+  filter(logLoss == min)
+paste("The best classification model is ncomp=",best.pls$ncomp," ")
+```
 
 ## Random Forest Models
 
@@ -485,11 +430,7 @@ best.lmt <- fit.lmt$results %>%
   mutate(iter = iter, min = min(logLoss)) %>% 
   filter(logLoss == min)
 paste("The best Logistic Model Tree is iteration =",best.lmt$iter," ")
-```
-
-## Partial Leaset Square Model
-
-Partial Least Squares is used when predictors are highly correlated. The algorithm determines the best model covers the most variance with the smallest number of predictors. It sort of is a combination of principal component analysis and linear regression. In partial least squares regression, the predictors are reduced down to a smaller set of uncorrelated components called latent factors and then linear regression is performed on these new components. Partial least squares is a good option in cases where we have more predictor variables than observations or highly correlated predictors.
+```  
 
 # Final Model Selection
 Out of the 6 best models (one of each type) above we will now select the final best model.
@@ -497,15 +438,49 @@ Out of the 6 best models (one of each type) above we will now select the final b
 Using the `confusionMatrix` function, we will test our models on the test sets. 
 ```{r, warning=FALSE}
 a<- confusionMatrix(data = diabetes.test.log$Diabetes_binary, reference = predict(fit.log3, newdata = diabetes.test.log))
+pred.a <- predict(fit.log3, newdata = diabetes.test.log)
 b<- confusionMatrix(data = diabetes.test.log$Diabetes_binary, reference = predict(fit.rf, newdata = diabetes.test.log))
 c<- confusionMatrix(data = diabetes.test.log$Diabetes_binary, reference = predict(fit.ob, newdata = diabetes.test.log))
+d<- confusionMatrix(data = diabetes.test.log$Diabetes_binary, reference = predict(fit.lasso, newdata = diabetes.test.log))
+e<- confusionMatrix(data = diabetes.test.log$Diabetes_binary, reference = predict(fit.classtree, newdata = diabetes.test.log))
+f<- confusionMatrix(data = diabetes.test.log$Diabetes_binary, reference = predict(fit.pls, newdata = diabetes.test.log))
+pred.a<- predict(fit.log3, newdata = diabetes.test.log)
+pred.b<- predict(fit.rf, newdata = diabetes.test.log)
+pred.c<- predict(fit.ob, newdata = diabetes.test.log)
+pred.d <- predict(fit.lasso, newdata = diabetes.test.log)
+pred.e<- predict(fit.classtree, newdata = diabetes.test.log)
+pred.f<- predict(fit.pls, newdata = diabetes.test.log)
 ```
 
+```{r}
+#create function for calculating LogLoss
+LogLoss=function(actual, predicted)
+{
+  result=-1/length(actual)*(sum((actual*log(predicted)+(1-actual)*log(1-predicted))))
+  return(result)
+}
+#turn factors to numeric
+diabetes.test.log$diabetesLL <- as.numeric(ifelse(diabetes.test.log$Diabetes_binary == "no", 0, 1))
+pred.a<- as.numeric(ifelse (pred.a=="no",0,1))
+pred.b<- as.numeric(ifelse (pred.b=="no",0,1))
+pred.c<- as.numeric(ifelse (pred.c=="no",0,1))
+pred.d<- as.numeric(ifelse (pred.d=="no",0,1))
+pred.e<- as.numeric(ifelse (pred.e=="no",0,1))
+pred.f<- as.numeric(ifelse (pred.f=="no",0,1))
+#calculate LogLoss using the function
+ll.a<- LogLoss(diabetes.test.log$diabetesLL,pred.a)
+ll.b<- LogLoss(diabetes.test.log$diabetesLL,pred.b)
+ll.c<- LogLoss(diabetes.test.log$diabetesLL,pred.c)
+ll.d<- LogLoss(diabetes.test.log$diabetesLL,pred.d)
+ll.e<- LogLoss(diabetes.test.log$diabetesLL,pred.e)
+ll.f<- LogLoss(diabetes.test.log$diabetesLL,pred.f)
+```  
 Now we will add each of the model's and their accuracy to a tibble. The reason we are using the accuracy here is because we want to see how often our models correctly predicted on the test sets.
 ```{r}
-name<- c("fit.log3", "fit.rf", "fit.lmt")
-accuracy <- c(a[[3]][1],b[[3]][1],c[[3]][1])
-all.fits<- tibble(name, accuracy)
+name<- c("fit.log3", "fit.rf", "fit.lmt", "fit.lasso", "fit.classtree", "fit.pls")
+accuracy <- c(a[[3]][1],b[[3]][1],c[[3]][1],d[[3]][1],e[[3]][1],f[[3]][1])
+log_loss<- c(ll.a,ll.b,ll.c,ll.d,ll.e,ll.f)
+all.fits<- tibble(name, accuracy, log_loss)
 ```
 
 Next we will use our tibble with all the model's and their accuracy to chose the best model. The model that was most accurate at predicting in the test set will be the winner so we will use the `max` function to find the model with the highest accuracy.
@@ -519,7 +494,3 @@ Now we will use the `paste` function to give us the result of the best model.
 ```{r}
 paste("The best model is", best$name, " ")
 ```
-
-# Model Selection
-
-
