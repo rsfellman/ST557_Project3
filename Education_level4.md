@@ -105,7 +105,7 @@ ggplot(physHlth.sum, aes(x = PhysHlth, y = proportion.diabetes, size = n)) +
   labs(title = "Proportion of People with Diabetes", subtitle = "vs the number of days they had a Physical illness/injury the last 30 days")
 ```
 
-![](Education_level3_files/figure-gfm/unnamed-chunk-4-1.png)<!-- --> In
+![](Education_level4_files/figure-gfm/unnamed-chunk-7-1.png)<!-- --> In
 this graph it is helpful to look for patterns and trends in the data. Is
 there a positive or negative relationship between the number of days
 with physical illness/injury and the proportion of people with diabetes.
@@ -127,8 +127,8 @@ tab.Alc #printing
 
     ##                
     ##                 No Heavy Alcohol Consumption Heavy Alcohol Consumption
-    ##   No Diabetes                           6852                       330
-    ##   Pre-/Diabetes                         2256                        40
+    ##   No Diabetes                          48619                      3065
+    ##   Pre-/Diabetes                        10820                       246
 
 In this table we can see the counts of observations in each category. We
 can look for things such as if there are higher counts of diabetes in
@@ -150,7 +150,7 @@ ggplot(Alc.sum, aes(x=HvyAlcoholConsump, y=proportion.diabetes))+
   geom_bar(stat="identity", aes(fill=Gender), position="stack")
 ```
 
-![](Education_level3_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](Education_level4_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 With this bar graph we can not only see if there are higher numbers of
 diabetes among those with heavy alcohol consumption but we can also see
 if there is a difference in alcohol consumption between men and women
@@ -171,8 +171,8 @@ tab.Doc #printing
 
     ##                
     ##                  Not Avoid  Avoid Doc
-    ##   No Diabetes   0.63410002 0.12365478
-    ##   Pre-/Diabetes 0.20310192 0.03914328
+    ##   No Diabetes   0.74254980 0.08109960
+    ##   Pre-/Diabetes 0.15676494 0.01958566
 
 Here we need to remember that the numbers we see are proportions. Is
 there a higher proportion of diabetes in those that could not afford to
@@ -194,7 +194,7 @@ ggplot(Doc.sum, aes(x=NoDocbcCost, y=proportion.diabetes))+
   geom_bar(stat="identity", aes(fill=Gender),position="stack")
 ```
 
-![](Education_level3_files/figure-gfm/unnamed-chunk-8-1.png)<!-- --> In
+![](Education_level4_files/figure-gfm/unnamed-chunk-11-1.png)<!-- --> In
 this bar graph do we see a difference between men and women when
 examining the proportion of people with diabetes who could not afford a
 doctor visit? Do we see any proportions that are unexpected? The
@@ -217,7 +217,7 @@ ggplot(bmi.sum, aes(x = BMI, y = proportion.diabetes, size = n)) +
   labs(title = "Proportion of People with Diabetes at each BMI for Education = 1")
 ```
 
-![](Education_level3_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](Education_level4_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 When looking at this graph is is helpful to look for trends. You can
 examine the graph to see if there is a positive or negative correlation
 between the BMI and the proportion of people with diabetes. It can also
@@ -242,7 +242,7 @@ ggplot(age.sum, aes(x = Age, y = proportion.diabetes)) +
   labs(title = "Proportion of People with Diabetes at each age")
 ```
 
-![](Education_level3_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](Education_level4_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 When examining this graph, it is helpful to look for trends in the data.
 For example, do higher ages have higher proportions of diabetes or lower
 proportions? You can also think about what kind of trend line would best
@@ -266,7 +266,7 @@ ggplot(income.sum, aes(x = Income, y = proportion.diabetes, size = n)) +
   labs(title = "Proportion of People with Diabetes at each income level")
 ```
 
-![](Education_level3_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](Education_level4_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 This graph shows us the proportion of people with diabetes at each
 income level. Level 1 is less than 10,000 dollars and it goes all the
 way up to level 8 which is greater than or equal to 75,000 dollars. It
@@ -287,10 +287,10 @@ tab<- table(diabetes.ed$Diabetes_binary, diabetes.ed$AnyHealthcare)
 rbind(tab, apply(tab, MARGIN = 2, FUN = function(x){round(x[2] / sum(x), 3)}))
 ```
 
-    ##         0        1
-    ## 0 990.000 6192.000
-    ## 1 144.000 2152.000
-    ##     0.127    0.258
+    ##          0        1
+    ## 0 3711.000 47973.00
+    ## 1  546.000 10520.00
+    ##      0.128     0.18
 
 In this table we have the columns giving the count of people who have
 health care (0 = no, 1 = yes), and the rows providing the count of
@@ -495,17 +495,17 @@ print(fit.log1)
 
     ## Generalized Linear Model 
     ## 
-    ## 6636 samples
-    ##    4 predictor
-    ##    2 classes: 'no', 'yes' 
+    ## 43926 samples
+    ##     4 predictor
+    ##     2 classes: 'no', 'yes' 
     ## 
     ## Pre-processing: centered (4), scaled (4) 
     ## Resampling: Cross-Validated (5 fold) 
-    ## Summary of sample sizes: 5310, 5308, 5309, 5308, 5309 
+    ## Summary of sample sizes: 35141, 35140, 35142, 35140, 35141 
     ## Resampling results:
     ## 
     ##   logLoss  
-    ##   0.5211766
+    ##   0.4393127
 
 ``` r
 print(fit.log2)
@@ -513,17 +513,17 @@ print(fit.log2)
 
     ## Generalized Linear Model 
     ## 
-    ## 6636 samples
-    ##    4 predictor
-    ##    2 classes: 'no', 'yes' 
+    ## 43926 samples
+    ##     4 predictor
+    ##     2 classes: 'no', 'yes' 
     ## 
     ## Pre-processing: centered (4), scaled (4) 
     ## Resampling: Cross-Validated (5 fold) 
-    ## Summary of sample sizes: 5309, 5310, 5308, 5309, 5308 
+    ## Summary of sample sizes: 35141, 35141, 35140, 35141, 35141 
     ## Resampling results:
     ## 
     ##   logLoss  
-    ##   0.5313814
+    ##   0.4374746
 
 ``` r
 print(fit.log3)
@@ -531,17 +531,17 @@ print(fit.log3)
 
     ## Generalized Linear Model 
     ## 
-    ## 6636 samples
-    ##    4 predictor
-    ##    2 classes: 'no', 'yes' 
+    ## 43926 samples
+    ##     4 predictor
+    ##     2 classes: 'no', 'yes' 
     ## 
     ## Pre-processing: centered (4), scaled (4) 
     ## Resampling: Cross-Validated (5 fold) 
-    ## Summary of sample sizes: 5308, 5309, 5310, 5308, 5309 
+    ## Summary of sample sizes: 35141, 35142, 35140, 35140, 35141 
     ## Resampling results:
     ## 
     ##   logLoss  
-    ##   0.4982882
+    ##   0.4109413
 
 Next we will make a table of the log loss for each of our 3 logistic
 regression models and use this table to choose the model with the lowest
@@ -612,37 +612,37 @@ print(fit.lasso)
 
     ## glmnet 
     ## 
-    ## 6636 samples
-    ##    9 predictor
-    ##    2 classes: 'no', 'yes' 
+    ## 43926 samples
+    ##     9 predictor
+    ##     2 classes: 'no', 'yes' 
     ## 
     ## No pre-processing
     ## Resampling: Cross-Validated (5 fold) 
-    ## Summary of sample sizes: 5309, 5309, 5308, 5309, 5309 
+    ## Summary of sample sizes: 35142, 35140, 35140, 35141, 35141 
     ## Resampling results across tuning parameters:
     ## 
     ##   lambda  logLoss  
-    ##   0.00    0.5063100
-    ##   0.05    0.5325039
-    ##   0.10    0.5537335
-    ##   0.15    0.5537335
-    ##   0.20    0.5537335
-    ##   0.25    0.5537335
-    ##   0.30    0.5537335
-    ##   0.35    0.5537335
-    ##   0.40    0.5537335
-    ##   0.45    0.5537335
-    ##   0.50    0.5537335
-    ##   0.55    0.5537335
-    ##   0.60    0.5537335
-    ##   0.65    0.5537335
-    ##   0.70    0.5537335
-    ##   0.75    0.5537335
-    ##   0.80    0.5537335
-    ##   0.85    0.5537335
-    ##   0.90    0.5537335
-    ##   0.95    0.5537335
-    ##   1.00    0.5537335
+    ##   0.00    0.4161637
+    ##   0.05    0.4472930
+    ##   0.10    0.4658362
+    ##   0.15    0.4658362
+    ##   0.20    0.4658362
+    ##   0.25    0.4658362
+    ##   0.30    0.4658362
+    ##   0.35    0.4658362
+    ##   0.40    0.4658362
+    ##   0.45    0.4658362
+    ##   0.50    0.4658362
+    ##   0.55    0.4658362
+    ##   0.60    0.4658362
+    ##   0.65    0.4658362
+    ##   0.70    0.4658362
+    ##   0.75    0.4658362
+    ##   0.80    0.4658362
+    ##   0.85    0.4658362
+    ##   0.90    0.4658362
+    ##   0.95    0.4658362
+    ##   1.00    0.4658362
     ## 
     ## Tuning parameter 'alpha' was held constant at a value of 1
     ## logLoss was used to select the optimal model using the smallest value.
@@ -709,30 +709,30 @@ print(fit.classtree)
 
     ## CART 
     ## 
-    ## 6636 samples
-    ##    9 predictor
-    ##    2 classes: 'no', 'yes' 
+    ## 43926 samples
+    ##     9 predictor
+    ##     2 classes: 'no', 'yes' 
     ## 
     ## No pre-processing
     ## Resampling: Cross-Validated (5 fold) 
-    ## Summary of sample sizes: 5309, 5308, 5309, 5309, 5309 
+    ## Summary of sample sizes: 35140, 35141, 35142, 35140, 35141 
     ## Resampling results across tuning parameters:
     ## 
     ##   cp     logLoss  
-    ##   0.000  0.6504722
-    ##   0.001  0.5709652
-    ##   0.002  0.5455103
-    ##   0.003  0.5347380
-    ##   0.004  0.5440594
-    ##   0.005  0.5433472
-    ##   0.006  0.5488077
-    ##   0.007  0.5485878
-    ##   0.008  0.5510798
-    ##   0.009  0.5537335
-    ##   0.010  0.5537335
+    ##   0.000  0.4916868
+    ##   0.001  0.4423252
+    ##   0.002  0.4424072
+    ##   0.003  0.4658362
+    ##   0.004  0.4658362
+    ##   0.005  0.4658362
+    ##   0.006  0.4658362
+    ##   0.007  0.4658362
+    ##   0.008  0.4658362
+    ##   0.009  0.4658362
+    ##   0.010  0.4658362
     ## 
     ## logLoss was used to select the optimal model using the smallest value.
-    ## The final value used for the model was cp = 0.003.
+    ## The final value used for the model was cp = 0.001.
 
 Now we will select our best Classification Tree model using the
 `Log Loss` metric.
@@ -744,7 +744,7 @@ best.classtree <- fit.classtree$results %>%
 paste("The best classification tree model is cp=",best.classtree$cp," ")
 ```
 
-    ## [1] "The best classification tree model is cp= 0.003  "
+    ## [1] "The best classification tree model is cp= 0.001  "
 
 ## Random Forest Models
 
@@ -818,18 +818,18 @@ print(fit.rf)
 
     ## Random Forest 
     ## 
-    ## 2654 samples
-    ##    3 predictor
-    ##    2 classes: 'no', 'yes' 
+    ## 17570 samples
+    ##     3 predictor
+    ##     2 classes: 'no', 'yes' 
     ## 
     ## No pre-processing
     ## Resampling: Cross-Validated (5 fold) 
-    ## Summary of sample sizes: 2123, 2123, 2123, 2123, 2124 
+    ## Summary of sample sizes: 14056, 14057, 14056, 14055, 14056 
     ## Resampling results across tuning parameters:
     ## 
-    ##   mtry  logLoss  
-    ##   2     0.8455012
-    ##   3     0.9628453
+    ##   mtry  logLoss 
+    ##   2     1.907162
+    ##   3     1.932458
     ## 
     ## logLoss was used to select the optimal model using the smallest value.
     ## The final value used for the model was mtry = 2.
@@ -890,22 +890,22 @@ print(fit.lmt)
 
     ## Logistic Model Trees 
     ## 
-    ## 6636 samples
-    ##    3 predictor
-    ##    2 classes: 'no', 'yes' 
+    ## 43926 samples
+    ##     3 predictor
+    ##     2 classes: 'no', 'yes' 
     ## 
     ## No pre-processing
     ## Resampling: Cross-Validated (5 fold) 
-    ## Summary of sample sizes: 5309, 5309, 5308, 5309, 5309 
+    ## Summary of sample sizes: 35140, 35141, 35142, 35140, 35141 
     ## Resampling results across tuning parameters:
     ## 
     ##   iter  logLoss  
-    ##   2     0.5139172
-    ##   3     0.5120431
-    ##   4     0.5127838
+    ##   2     0.4183835
+    ##   3     0.4175330
+    ##   4     0.4173787
     ## 
     ## logLoss was used to select the optimal model using the smallest value.
-    ## The final value used for the model was iter = 3.
+    ## The final value used for the model was iter = 4.
 
 Now we will select our best LMT model using the `logLoss` metric.
 
@@ -916,7 +916,7 @@ best.lmt <- fit.lmt$results %>%
 paste("The best Logistic Model Tree is iteration =",best.lmt$iter," ")
 ```
 
-    ## [1] "The best Logistic Model Tree is iteration = 3  "
+    ## [1] "The best Logistic Model Tree is iteration = 4  "
 
 ## Partial Least Squares Model
 
@@ -959,28 +959,28 @@ print(fit.pls)
 
     ## Partial Least Squares 
     ## 
-    ## 6636 samples
-    ##    9 predictor
-    ##    2 classes: 'no', 'yes' 
+    ## 43926 samples
+    ##     9 predictor
+    ##     2 classes: 'no', 'yes' 
     ## 
     ## Pre-processing: centered (9), scaled (9) 
     ## Resampling: Cross-Validated (5 fold) 
-    ## Summary of sample sizes: 5308, 5308, 5310, 5308, 5310 
+    ## Summary of sample sizes: 35142, 35140, 35141, 35140, 35141 
     ## Resampling results across tuning parameters:
     ## 
     ##   ncomp  logLoss  
-    ##   1      0.5696679
-    ##   2      0.5677498
-    ##   3      0.5677334
-    ##   4      0.5677358
-    ##   5      0.5677364
-    ##   6      0.5677359
-    ##   7      0.5677359
-    ##   8      0.5677359
-    ##   9      0.5677359
+    ##   1      0.5146571
+    ##   2      0.5131030
+    ##   3      0.5130347
+    ##   4      0.5130263
+    ##   5      0.5130261
+    ##   6      0.5130260
+    ##   7      0.5130260
+    ##   8      0.5130260
+    ##   9      0.5130260
     ## 
     ## logLoss was used to select the optimal model using the smallest value.
-    ## The final value used for the model was ncomp = 3.
+    ## The final value used for the model was ncomp = 8.
 
 Now we will select our best PLS model using the `log Loss` metric.
 
@@ -991,7 +991,7 @@ best.pls <- fit.pls$results %>%
 paste("The best partial least squares model is ncomp=",best.pls$ncomp," ")
 ```
 
-    ## [1] "The best partial least squares model is ncomp= 3  "
+    ## [1] "The best partial least squares model is ncomp= 8  "
 
 # Final Model Selection
 
@@ -1061,4 +1061,4 @@ model.
 paste("The best model is", best$name, " ")
 ```
 
-    ## [1] "The best model is fit.lasso  "
+    ## [1] "The best model is fit.log3  "
