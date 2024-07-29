@@ -46,9 +46,9 @@ apply(reports, MARGIN = 1,
 
 # Links to files
 
-[Education Level 1](Education_level1.html)  
-[Education Level 3](Education_level3.html)  
-[Education Level 4](Education_level4.html)  
-[Education Level 5](Education_level5.html)  
-[Education Level 6](Education_level6.html)
+[Education Level 1](Education_level1.rmd)  
+[Education Level 3](Education_level3.rmd)  
+[Education Level 4](Education_level4.rmd)  
+[Education Level 5](Education_level5.rmd)  
+[Education Level 6](Education_level6.rmd)
 
